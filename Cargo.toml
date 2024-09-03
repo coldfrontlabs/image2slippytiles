@@ -1,8 +1,9 @@
 [package]
-name = "image2tiles"
+name = "image2slippytiles"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+clap = { version = "4.4.4", features = ["derive"] }
 image = "0.25.2"
 peak_alloc = "0.2.1"

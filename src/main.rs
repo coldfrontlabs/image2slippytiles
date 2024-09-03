@@ -1,7 +1,27 @@
-use image::{DynamicImage, GenericImage, GenericImageView, ImageReader};
+use clap::Parser;
 use image::imageops::FilterType;
+use image::{DynamicImage, GenericImage, GenericImageView, ImageReader};
 use peak_alloc::PeakAlloc;
 use std::fs;
+
+#[derive(Parser)]
+#[command(version, about, long_about = None)]
+struct Cli {
+    /// The input image
+    filename: String,
+
+    /// Verbose mode
+    #[arg(short = 'v', long)]
+    verbose: bool,
+
+    /// Output directory ('tiles' in the current directory if no option provided).
+    #[arg(short = 'o', long)]
+    output: Option<String>,
+
+    /// Output memory usage
+    #[arg(short = 'm', long)]
+    memory: bool,
+}
 
 #[global_allocator]
 static PEAK_ALLOC: PeakAlloc = PeakAlloc;
@@ -14,7 +34,8 @@ fn memory_check() {
 }
 
 fn main() {
-    let mut img = ImageReader::open("../image2tiles.php/PIA23623_hires.png").unwrap();
+    let args = Cli::parse();
+    let mut img = ImageReader::open(args.filename).unwrap();
     img.no_limits();
     println!("format: {:?}", img.format());
     let source = img.decode().unwrap();
@@ -30,8 +51,8 @@ fn main() {
         scale, max_zoom, offset_ratio
     );
 
-    let dir = "tiles";
-    fs::create_dir(dir).unwrap_or_default();
+    let dir = args.output.unwrap_or("tiles".to_string());
+    fs::create_dir(&dir).unwrap_or_default();
 
     let black_tile = image::DynamicImage::from(image::ImageBuffer::from_pixel(
         256,
@@ -54,14 +75,26 @@ fn main() {
         );
         if max_zoom / 2 > zoom {
             // When zoomed out, it's faster to resize the entire image and chunk it out.
-            zoom_then_crop(&source, &black_tile, dir, zoom, max_zoom, offset_ratio, ratio_size);
+            zoom_then_crop(
+                &source,
+                &black_tile,
+                &dir,
+                zoom,
+                max_zoom,
+                offset_ratio,
+                ratio_size,
+            );
         } else {
             // At closer to the native image resolution, it requires less memory to crop first, but more CPU.
-            crop_then_zoom(&source, dir, zoom, tile_size_at_zoom);
+            crop_then_zoom(&source, &dir, zoom, tile_size_at_zoom);
         }
-        memory_check()
+        if args.memory {
+            memory_check()
+        }
     }
 
+    /*
+    // Determine bounds of the slippy map.
     let boundsx = -180.0 + (360.0 * (source.width() as f32 / fullsize as f32));
     let boundsy = 90.0 - (180.0 * (source.height() as f32 / fullsize as f32));
 
@@ -71,12 +104,13 @@ fn main() {
     let boundsy = 1000.0 * (source.height() as f32 / fullsize as f32);
 
     println!("Bounds: [[0, 0],[{}, {}]]", boundsy, boundsx);
+    */
 }
 
 fn zoom_then_crop(
     source: &DynamicImage,
     black_tile: &DynamicImage,
-    dir: &str,
+    dir: &String,
     zoom: u32,
     max_zoom: u32,
     offset_ratio: f32,
@@ -105,32 +139,26 @@ fn zoom_then_crop(
             if x * 256 > zoom_image.width() || y * 256 > zoom_image.height() {
                 continue;
             }
-            let tile = if (x * 256) + 256 < zoom_image.width()
-                && (y * 256) + 256 < zoom_image.height()
-            {
-                //println!("{} - crop", name);
-                zoom_image.crop_imm(x * 256, y * 256, 256, 256)
-            } else {
-                let mut buffer = black_tile.clone();
-                let cropbuffer = zoom_image.crop_imm(x * 256, y * 256, 256, 256);
-                //println!("{} - partial crop {}x{}", name, cropbuffer.width(), cropbuffer.height());
-                cropbuffer
-                    .pixels()
-                    .for_each(|(x, y, pixel)| buffer.put_pixel(x, y, pixel));
-                buffer
-            };
+            let tile =
+                if (x * 256) + 256 < zoom_image.width() && (y * 256) + 256 < zoom_image.height() {
+                    //println!("{} - crop", name);
+                    zoom_image.crop_imm(x * 256, y * 256, 256, 256)
+                } else {
+                    let mut buffer = black_tile.clone();
+                    let cropbuffer = zoom_image.crop_imm(x * 256, y * 256, 256, 256);
+                    //println!("{} - partial crop {}x{}", name, cropbuffer.width(), cropbuffer.height());
+                    cropbuffer
+                        .pixels()
+                        .for_each(|(x, y, pixel)| buffer.put_pixel(x, y, pixel));
+                    buffer
+                };
             tile.save_with_format(name, image::ImageFormat::Png)
                 .unwrap();
         }
     }
 }
 
-fn crop_then_zoom(
-    source: &DynamicImage,
-    dir: &str,
-    zoom: u32,
-    tile_size_at_zoom: u32,
-) {
+fn crop_then_zoom(source: &DynamicImage, dir: &String, zoom: u32, tile_size_at_zoom: u32) {
     println!("Tile size at zoom {}: {}", zoom, tile_size_at_zoom);
     for x in 0..u32::pow(2, zoom) {
         fs::create_dir(format!("{}/{}/{}", dir, zoom, x)).unwrap_or_default();
@@ -143,17 +171,29 @@ fn crop_then_zoom(
             }
 
             let tile = if (x * tile_size_at_zoom) + tile_size_at_zoom < source.width()
-            && (y * tile_size_at_zoom) + tile_size_at_zoom < source.height()
+                && (y * tile_size_at_zoom) + tile_size_at_zoom < source.height()
             {
                 //println!("{} ({}x{}) - crop", name, tile_size_at_zoom, tile_size_at_zoom);
-                source.crop_imm(x * tile_size_at_zoom, y * tile_size_at_zoom, tile_size_at_zoom, tile_size_at_zoom).resize(256, 256, FilterType::Nearest)
+                source
+                    .crop_imm(
+                        x * tile_size_at_zoom,
+                        y * tile_size_at_zoom,
+                        tile_size_at_zoom,
+                        tile_size_at_zoom,
+                    )
+                    .resize(256, 256, FilterType::Nearest)
             } else {
-                let mut buffer =  image::DynamicImage::from(image::ImageBuffer::from_pixel(
+                let mut buffer = image::DynamicImage::from(image::ImageBuffer::from_pixel(
                     tile_size_at_zoom,
                     tile_size_at_zoom,
                     image::Rgb([0 as u8, 0 as u8, 0 as u8]),
                 ));
-                let cropbuffer = source.crop_imm(x * tile_size_at_zoom, y * tile_size_at_zoom, tile_size_at_zoom, tile_size_at_zoom);
+                let cropbuffer = source.crop_imm(
+                    x * tile_size_at_zoom,
+                    y * tile_size_at_zoom,
+                    tile_size_at_zoom,
+                    tile_size_at_zoom,
+                );
                 //println!("{} - partial crop {}x{}", name, cropbuffer.width(), cropbuffer.height());
                 cropbuffer
                     .pixels()
