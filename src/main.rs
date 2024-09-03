@@ -25,6 +25,10 @@ struct Cli {
     /// Starting zoom level
     #[arg(short = 'z', long, default_value = "0")]
     zoom: u32,
+
+    /// End zoom level
+    #[arg(short = 'x', long)]
+    end_zoom: Option<u32>,
 }
 
 #[global_allocator]
@@ -64,6 +68,22 @@ fn main() {
         return;
     }
 
+    let mut end_zoom = args.end_zoom.unwrap_or(max_zoom);
+    if end_zoom < args.zoom {
+        println!(
+            "The end zoom level must be greater than the start zoom level. {} is less than {}.",
+            end_zoom, args.zoom
+        );
+        return;
+    }
+    if end_zoom > max_zoom {
+        println!(
+            "Warning: The max zoom level is {} (less the the requested end zoom level {}).  Using {} as the end zoom level.",
+            max_zoom, end_zoom, max_zoom
+        );
+        end_zoom = max_zoom;
+    }
+
     let fullsize = u32::pow(2, max_zoom) * 256;
     if args.verbose {
         println!(
@@ -88,7 +108,7 @@ fn main() {
         image::Rgb([0 as u8, 0 as u8, 0 as u8]),
     ));
 
-    for zoom in args.zoom..max_zoom + 1 {
+    for zoom in args.zoom..end_zoom + 1 {
         fs::create_dir(format!("{}/{}", dir, zoom)).unwrap_or_default();
 
         let ratio_size = if zoom == max_zoom {
@@ -161,7 +181,6 @@ fn zoom_then_crop(
     }
 
     for x in 0..u32::pow(2, zoom) {
-        fs::create_dir(format!("{}/{}/{}", dir, zoom, x)).unwrap_or_default();
         for y in 0..u32::pow(2, zoom) {
             let name = format!("{}/{}/{}/{}.png", dir, zoom, x, y);
             if x * 256 > zoom_image.width() || y * 256 > zoom_image.height() {
@@ -189,6 +208,7 @@ fn zoom_then_crop(
                         .for_each(|(x, y, pixel)| buffer.put_pixel(x, y, pixel));
                     buffer
                 };
+            fs::create_dir(format!("{}/{}/{}", dir, zoom, x)).unwrap_or_default();
             tile.save_with_format(name, image::ImageFormat::Png)
                 .unwrap();
         }
@@ -206,7 +226,6 @@ fn crop_then_zoom(
         println!("Tile size at zoom {}: {}", zoom, tile_size_at_zoom);
     }
     for x in 0..u32::pow(2, zoom) {
-        fs::create_dir(format!("{}/{}/{}", dir, zoom, x)).unwrap_or_default();
         for y in 0..u32::pow(2, zoom) {
             let name = format!("{}/{}/{}/{}.png", dir, zoom, x, y);
 
@@ -257,6 +276,7 @@ fn crop_then_zoom(
                     .for_each(|(x, y, pixel)| buffer.put_pixel(x, y, pixel));
                 buffer.resize(256, 256, FilterType::Nearest)
             };
+            fs::create_dir(format!("{}/{}/{}", dir, zoom, x)).unwrap_or_default();
             tile.save_with_format(name, image::ImageFormat::Png)
                 .unwrap();
         }
