@@ -21,6 +21,10 @@ struct Cli {
     /// Output memory usage
     #[arg(short = 'm', long)]
     memory: bool,
+
+    /// Starting zoom level
+    #[arg(short = 'z', long, default_value = "0")]
+    zoom: u32,
 }
 
 #[global_allocator]
@@ -37,19 +41,43 @@ fn main() {
     let args = Cli::parse();
     let mut img = ImageReader::open(args.filename).unwrap();
     img.no_limits();
-    println!("format: {:?}", img.format());
+
+    if args.verbose {
+        println!("format: {:?}", img.format());
+    }
+
     let source = img.decode().unwrap();
-    println!("Image: {}x{}", source.width(), source.height());
+
+    if args.verbose {
+        println!("Image: {}x{}", source.width(), source.height());
+    }
+
     let max = std::cmp::max(source.width(), source.height());
     let scale = (max as f32 / 256.0).ceil() as u32;
     let max_zoom = (scale as f32).log2().ceil() as u32;
+
+    if max_zoom < args.zoom {
+        println!(
+            "The max zoom on the source image can only be zoomed to {}. {} is too high.",
+            max_zoom, args.zoom,
+        );
+        return;
+    }
+
     let fullsize = u32::pow(2, max_zoom) * 256;
-    println!("max: {}, full: {}", max, fullsize);
+    if args.verbose {
+        println!(
+            "Max image resolution: {}, Full zoom level resolution: {}",
+            max, fullsize
+        );
+    }
     let offset_ratio = max as f32 / fullsize as f32;
-    println!(
-        "scale: {}, max_zoom: {}, offset_ratio: {}",
-        scale, max_zoom, offset_ratio
-    );
+    if args.verbose {
+        println!(
+            "scale: {}, max_zoom: {}, offset_ratio: {}",
+            scale, max_zoom, offset_ratio
+        );
+    }
 
     let dir = args.output.unwrap_or("tiles".to_string());
     fs::create_dir(&dir).unwrap_or_default();
@@ -60,7 +88,7 @@ fn main() {
         image::Rgb([0 as u8, 0 as u8, 0 as u8]),
     ));
 
-    for zoom in 0..max_zoom + 1 {
+    for zoom in args.zoom..max_zoom + 1 {
         fs::create_dir(format!("{}/{}", dir, zoom)).unwrap_or_default();
 
         let ratio_size = if zoom == max_zoom {
@@ -69,10 +97,12 @@ fn main() {
             (256.0 * u32::pow(2, zoom) as f32 * offset_ratio) as u32
         };
         let tile_size_at_zoom = 256 * u32::pow(2, max_zoom - zoom);
-        println!(
-            "Zoom: {}, ratio_size: {}, tile_size_at_zoom: {}",
-            zoom, ratio_size, tile_size_at_zoom
-        );
+        if args.verbose {
+            println!(
+                "Processing zoom: {}, ratio_size: {}, tile_size_at_zoom: {}",
+                zoom, ratio_size, tile_size_at_zoom
+            );
+        }
         if max_zoom / 2 > zoom {
             // When zoomed out, it's faster to resize the entire image and chunk it out.
             zoom_then_crop(
@@ -81,12 +111,12 @@ fn main() {
                 &dir,
                 zoom,
                 max_zoom,
-                offset_ratio,
                 ratio_size,
+                args.verbose,
             );
         } else {
             // At closer to the native image resolution, it requires less memory to crop first, but more CPU.
-            crop_then_zoom(&source, &dir, zoom, tile_size_at_zoom);
+            crop_then_zoom(&source, &dir, zoom, tile_size_at_zoom, args.verbose);
         }
         if args.memory {
             memory_check()
@@ -113,24 +143,22 @@ fn zoom_then_crop(
     dir: &String,
     zoom: u32,
     max_zoom: u32,
-    offset_ratio: f32,
     ratio_size: u32,
+    verbose: bool,
 ) {
     let zoom_image = if zoom == max_zoom {
         &source
     } else {
-        println!(
-            "Resizing image to {} for zoom {} ({})",
-            ratio_size, zoom, offset_ratio
-        );
         &source.resize(ratio_size, ratio_size, FilterType::Nearest)
     };
-    println!(
-        "Zoom Image at {}: {}x{}",
-        zoom,
-        zoom_image.width(),
-        zoom_image.height()
-    );
+    if verbose {
+        println!(
+            "Zoom Image at {}: {}x{}",
+            zoom,
+            zoom_image.width(),
+            zoom_image.height()
+        );
+    }
 
     for x in 0..u32::pow(2, zoom) {
         fs::create_dir(format!("{}/{}/{}", dir, zoom, x)).unwrap_or_default();
@@ -141,12 +169,21 @@ fn zoom_then_crop(
             }
             let tile =
                 if (x * 256) + 256 < zoom_image.width() && (y * 256) + 256 < zoom_image.height() {
-                    //println!("{} - crop", name);
+                    if verbose {
+                        println!("Zoom-then-crop: Genered tile {} by cropping", name);
+                    }
                     zoom_image.crop_imm(x * 256, y * 256, 256, 256)
                 } else {
                     let mut buffer = black_tile.clone();
                     let cropbuffer = zoom_image.crop_imm(x * 256, y * 256, 256, 256);
-                    //println!("{} - partial crop {}x{}", name, cropbuffer.width(), cropbuffer.height());
+                    if verbose {
+                        println!(
+                            "Zoom-then-crop: Genered tile {} by partial cropping {}x{}",
+                            name,
+                            cropbuffer.width(),
+                            cropbuffer.height()
+                        );
+                    }
                     cropbuffer
                         .pixels()
                         .for_each(|(x, y, pixel)| buffer.put_pixel(x, y, pixel));
@@ -158,8 +195,16 @@ fn zoom_then_crop(
     }
 }
 
-fn crop_then_zoom(source: &DynamicImage, dir: &String, zoom: u32, tile_size_at_zoom: u32) {
-    println!("Tile size at zoom {}: {}", zoom, tile_size_at_zoom);
+fn crop_then_zoom(
+    source: &DynamicImage,
+    dir: &String,
+    zoom: u32,
+    tile_size_at_zoom: u32,
+    verbose: bool,
+) {
+    if verbose {
+        println!("Tile size at zoom {}: {}", zoom, tile_size_at_zoom);
+    }
     for x in 0..u32::pow(2, zoom) {
         fs::create_dir(format!("{}/{}/{}", dir, zoom, x)).unwrap_or_default();
         for y in 0..u32::pow(2, zoom) {
@@ -173,7 +218,12 @@ fn crop_then_zoom(source: &DynamicImage, dir: &String, zoom: u32, tile_size_at_z
             let tile = if (x * tile_size_at_zoom) + tile_size_at_zoom < source.width()
                 && (y * tile_size_at_zoom) + tile_size_at_zoom < source.height()
             {
-                //println!("{} ({}x{}) - crop", name, tile_size_at_zoom, tile_size_at_zoom);
+                if verbose {
+                    println!(
+                        "Crop-then-zoom: Generated tile {} ({}x{}) by cropping",
+                        name, tile_size_at_zoom, tile_size_at_zoom
+                    );
+                }
                 source
                     .crop_imm(
                         x * tile_size_at_zoom,
@@ -194,7 +244,14 @@ fn crop_then_zoom(source: &DynamicImage, dir: &String, zoom: u32, tile_size_at_z
                     tile_size_at_zoom,
                     tile_size_at_zoom,
                 );
-                //println!("{} - partial crop {}x{}", name, cropbuffer.width(), cropbuffer.height());
+                if verbose {
+                    println!(
+                        "Crop-then-zoom: Generated tile {} ({}x{}) by partial cropping",
+                        name,
+                        cropbuffer.width(),
+                        cropbuffer.height()
+                    );
+                }
                 cropbuffer
                     .pixels()
                     .for_each(|(x, y, pixel)| buffer.put_pixel(x, y, pixel));
