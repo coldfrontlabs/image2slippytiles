@@ -37,15 +37,19 @@ pub struct Cli {
 }
 
 pub struct ImageMetadata {
-
+    pub name: String,
+    pub filename: String,
+    pub width: u32,
+    pub height: u32,
 }
 
 pub struct SlideMetadata {
     pub mpp_x: f32,
     pub mpp_y: f32,
+    pub associated_images: Vec<ImageMetadata>,
 }
 
-pub struct ImageAndMetadata {
+pub struct ImageProcess {
     pub image: Option<DynamicImage>,
     pub image_metadata: Option<ImageMetadata>,
     pub slide_metadata: Option<ImageMetadata>,

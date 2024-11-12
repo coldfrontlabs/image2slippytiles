@@ -8,3 +8,6 @@ clap = { version = "4.4.4", features = ["derive"] }
 image = "0.25.2"
 openslide-rs = "2.2.0"
 peak_alloc = "0.2.1"
+
+[package.metadata.appimage]
+auto_link = true
