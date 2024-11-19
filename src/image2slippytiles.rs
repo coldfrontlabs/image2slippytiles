@@ -3,8 +3,7 @@ use image::imageops::FilterType;
 use image::{DynamicImage, GenericImage, GenericImageView, ImageReader};
 use peak_alloc::PeakAlloc;
 use std::fs;
-use std::fs::File;
-use std::io::BufReader;
+use serde::{Deserialize, Serialize};
 
 use openslide_rs::*;
 use std::path::Path;
@@ -34,6 +33,10 @@ pub struct Cli {
     /// End zoom level
     #[arg(short = 'x', long)]
     pub end_zoom: Option<u32>,
+
+    /// Output JSON metadata
+    #[arg(short = 'j', long)]
+    pub json: bool,
 }
 
 pub struct ImageMetadata {
@@ -46,35 +49,60 @@ pub struct ImageMetadata {
 pub struct SlideMetadata {
     pub mpp_x: f32,
     pub mpp_y: f32,
-    pub associated_images: Vec<ImageMetadata>,
 }
 
 pub struct ImageProcess {
-    pub image: Option<DynamicImage>,
+    pub image: DynamicImage,
     pub image_metadata: Option<ImageMetadata>,
-    pub slide_metadata: Option<ImageMetadata>,
+    pub slide_metadata: Option<SlideMetadata>,
+}
+
+#[derive(Deserialize, Serialize)]
+pub struct TileMetadata {
+    pub min_zoom: u32,
+    pub max_zoom: u32,
+    pub bounds: [f32; 4],
+    pub mpp: [f32; 2],
+    pub peak_memory: f32,
 }
 
 #[global_allocator]
 static PEAK_ALLOC: PeakAlloc = PeakAlloc;
 
-fn memory_check() {
+fn memory_check() -> (f32, f32) {
     let current_mem = PEAK_ALLOC.current_usage_as_mb();
-    println!("This program currently uses {} MB of RAM.", current_mem);
     let peak_mem = PEAK_ALLOC.peak_usage_as_mb();
-    println!("The max amount that was used {} MB", peak_mem);
+    return (current_mem, peak_mem);
 }
 
-pub fn load_image(args: &Cli) -> Option<DynamicImage> {
+pub fn load_image(args: &Cli) -> Option<ImageProcess> {
+
     if args.filename.as_str().ends_with(".svs") || args.filename.as_str().ends_with(".dcm") {
         let slide = OpenSlide::new(Path::new(&args.filename)).unwrap();
+        
+        let mpp = SlideMetadata {
+            mpp_x: *slide.properties().openslide_properties.mpp_x.clone().get_or_insert(0.0),
+            mpp_y: *slide.properties().openslide_properties.mpp_y.clone().get_or_insert(0.0),
+        };
 
-        let img = slide.read_image_rgb(&Region {
+        let img = slide.read_image_rgba(&Region {
             address: Address { x: 0, y: 0 },
             level: 0,
             size: slide.get_level_dimensions(0).unwrap(),
         }).unwrap();
-        return Some(DynamicImage::ImageRgb8(img));
+
+        let im = ImageMetadata {
+            name: args.filename.clone(),
+            filename: args.filename.clone(),
+            width: img.width(),
+            height: img.height(),
+        };
+
+        return Some(ImageProcess {
+            image: DynamicImage::ImageRgba8(img),
+            image_metadata: Some(im),
+            slide_metadata: Some(mpp),
+        });
     }
 
     let mut img = ImageReader::open(&args.filename).unwrap();
@@ -85,8 +113,19 @@ pub fn load_image(args: &Cli) -> Option<DynamicImage> {
     img.no_limits();
 
     let source = img.decode();
+    let im = ImageMetadata {
+        name: args.filename.clone(),
+        filename: args.filename.clone(),
+        width: source.as_ref().unwrap().width(),
+        height: source.as_ref().unwrap().height(),
+    };
+
     match source {
-        Ok(source) => Some(source),
+        Ok(source) => Some(ImageProcess {
+            image: source,
+            image_metadata: Some(im),
+            slide_metadata: None,
+        }),
         Err(e) => {
             println!("Error: {}", e);
             None
@@ -94,7 +133,7 @@ pub fn load_image(args: &Cli) -> Option<DynamicImage> {
     }
 }
 
-pub fn image2slippytiles(args: Cli, source: DynamicImage) {
+pub fn image2slippytiles(args: Cli, source: DynamicImage) -> Result<TileMetadata, String> {
     if args.verbose {
         println!("Image: {}x{}", source.width(), source.height());
     }
@@ -104,20 +143,18 @@ pub fn image2slippytiles(args: Cli, source: DynamicImage) {
     let max_zoom = (scale as f32).log2().ceil() as u32;
 
     if max_zoom < args.zoom {
-        println!(
+        return Err(format!(
             "The max zoom on the source image can only be zoomed to {}. {} is too high.",
             max_zoom, args.zoom,
-        );
-        return;
+        ));
     }
 
     let mut end_zoom = args.end_zoom.unwrap_or(max_zoom);
     if end_zoom < args.zoom {
-        println!(
+        return Err(format!(
             "The end zoom level must be greater than the start zoom level. {} is less than {}.",
             end_zoom, args.zoom
-        );
-        return;
+        ));
     }
     if end_zoom > max_zoom {
         println!(
@@ -148,7 +185,7 @@ pub fn image2slippytiles(args: Cli, source: DynamicImage) {
     let black_tile = image::DynamicImage::from(image::ImageBuffer::from_pixel(
         256,
         256,
-        image::Rgb([0 as u8, 0 as u8, 0 as u8]),
+        image::Rgba([0 as u8, 0 as u8, 0 as u8, 0 as u8]),
     ));
 
     for zoom in args.zoom..end_zoom + 1 {
@@ -182,9 +219,25 @@ pub fn image2slippytiles(args: Cli, source: DynamicImage) {
             crop_then_zoom(&source, &dir, zoom, tile_size_at_zoom, args.verbose);
         }
         if args.memory {
-            memory_check()
+            //memory_check(args.json)
+            let (current_mem, peak_mem) = memory_check();
+
+            println!("This program currently uses {} MB of RAM.", current_mem);
+            println!("The max amount that was used {} MB", peak_mem)
         }
     }
+    return Ok(TileMetadata {
+        min_zoom: args.zoom,
+        max_zoom: end_zoom,
+        bounds: [
+            0.0,
+            0.0,
+            -1.0 * source.width() as f32 /u32::pow( 2, max_zoom) as f32,
+            source.height() as f32 / u32::pow( 2, max_zoom) as f32,
+        ],
+        mpp: [0.0, 0.0],
+        peak_memory: PEAK_ALLOC.peak_usage_as_mb(),
+    });
 
     /*
     // Determine bounds of the slippy map.
@@ -298,7 +351,7 @@ fn crop_then_zoom(
                 let mut buffer = image::DynamicImage::from(image::ImageBuffer::from_pixel(
                     tile_size_at_zoom,
                     tile_size_at_zoom,
-                    image::Rgb([0 as u8, 0 as u8, 0 as u8]),
+                    image::Rgba([0 as u8, 0 as u8, 0 as u8, 0 as u8]),
                 ));
                 let cropbuffer = source.crop_imm(
                     x * tile_size_at_zoom,
