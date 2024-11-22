@@ -1,139 +1,15 @@
-use clap::Parser;
+
 use image::imageops::FilterType;
-use image::{DynamicImage, GenericImage, GenericImageView, ImageReader};
-use peak_alloc::PeakAlloc;
+use image::{DynamicImage, GenericImage, GenericImageView};
 use std::fs;
-use serde::{Deserialize, Serialize};
-
 use openslide_rs::*;
-use std::path::Path;
+use crate::metadata::*;
+use crate::globals::*;
+use crate::cli::Cli;
+use crate::chunkable::*;
 
-#[derive(Parser)]
-#[command(version, about, long_about = None)]
-pub struct Cli {
-    /// The input image
-    pub filename: String,
-
-    /// Verbose mode
-    #[arg(short = 'v', long)]
-    pub verbose: bool,
-
-    /// Output directory ('tiles' in the current directory if no option provided).
-    #[arg(short = 'o', long)]
-    pub output: Option<String>,
-
-    /// Output memory usage
-    #[arg(short = 'm', long)]
-    pub memory: bool,
-
-    /// Starting zoom level
-    #[arg(short = 'z', long, default_value = "0")]
-    pub zoom: u32,
-
-    /// End zoom level
-    #[arg(short = 'x', long)]
-    pub end_zoom: Option<u32>,
-
-    /// Output JSON metadata
-    #[arg(short = 'j', long)]
-    pub json: bool,
-}
-
-pub struct ImageMetadata {
-    pub name: String,
-    pub filename: String,
-    pub width: u32,
-    pub height: u32,
-}
-
-pub struct SlideMetadata {
-    pub mpp_x: f32,
-    pub mpp_y: f32,
-}
-
-pub struct ImageProcess {
-    pub image: DynamicImage,
-    pub image_metadata: Option<ImageMetadata>,
-    pub slide_metadata: Option<SlideMetadata>,
-}
-
-#[derive(Deserialize, Serialize)]
-pub struct TileMetadata {
-    pub min_zoom: u32,
-    pub max_zoom: u32,
-    pub bounds: [f32; 4],
-    pub mpp: [f32; 2],
-    pub peak_memory: f32,
-}
-
-#[global_allocator]
-static PEAK_ALLOC: PeakAlloc = PeakAlloc;
-
-fn memory_check() -> (f32, f32) {
-    let current_mem = PEAK_ALLOC.current_usage_as_mb();
-    let peak_mem = PEAK_ALLOC.peak_usage_as_mb();
-    return (current_mem, peak_mem);
-}
-
-pub fn load_image(args: &Cli) -> Option<ImageProcess> {
-
-    if args.filename.as_str().ends_with(".svs") || args.filename.as_str().ends_with(".dcm") {
-        let slide = OpenSlide::new(Path::new(&args.filename)).unwrap();
-        
-        let mpp = SlideMetadata {
-            mpp_x: *slide.properties().openslide_properties.mpp_x.clone().get_or_insert(0.0),
-            mpp_y: *slide.properties().openslide_properties.mpp_y.clone().get_or_insert(0.0),
-        };
-
-        let img = slide.read_image_rgba(&Region {
-            address: Address { x: 0, y: 0 },
-            level: 0,
-            size: slide.get_level_dimensions(0).unwrap(),
-        }).unwrap();
-
-        let im = ImageMetadata {
-            name: args.filename.clone(),
-            filename: args.filename.clone(),
-            width: img.width(),
-            height: img.height(),
-        };
-
-        return Some(ImageProcess {
-            image: DynamicImage::ImageRgba8(img),
-            image_metadata: Some(im),
-            slide_metadata: Some(mpp),
-        });
-    }
-
-    let mut img = ImageReader::open(&args.filename).unwrap();
-
-    if args.verbose {
-        println!("format: {:?}", img.format());
-    }
-    img.no_limits();
-
-    let source = img.decode();
-    let im = ImageMetadata {
-        name: args.filename.clone(),
-        filename: args.filename.clone(),
-        width: source.as_ref().unwrap().width(),
-        height: source.as_ref().unwrap().height(),
-    };
-
-    match source {
-        Ok(source) => Some(ImageProcess {
-            image: source,
-            image_metadata: Some(im),
-            slide_metadata: None,
-        }),
-        Err(e) => {
-            println!("Error: {}", e);
-            None
-        }
-    }
-}
-
-pub fn image2slippytiles(args: Cli, source: DynamicImage) -> Result<TileMetadata, String> {
+pub fn image2slippytiles(args: Cli, image_process: ImageProcess) -> Result<TileMetadata, String> {
+    let source = image_process.image.get_full_image();
     if args.verbose {
         println!("Image: {}x{}", source.width(), source.height());
     }
@@ -213,10 +89,11 @@ pub fn image2slippytiles(args: Cli, source: DynamicImage) -> Result<TileMetadata
                 max_zoom,
                 ratio_size,
                 args.verbose,
+                args.debug,
             );
         } else {
             // At closer to the native image resolution, it requires less memory to crop first, but more CPU.
-            crop_then_zoom(&source, &dir, zoom, tile_size_at_zoom, args.verbose);
+            crop_then_zoom(&source, &dir, zoom, tile_size_at_zoom, args.verbose, args.debug);
         }
         if args.memory {
             //memory_check(args.json)
@@ -232,10 +109,11 @@ pub fn image2slippytiles(args: Cli, source: DynamicImage) -> Result<TileMetadata
         bounds: [
             0.0,
             0.0,
-            -1.0 * source.width() as f32 /u32::pow( 2, max_zoom) as f32,
-            source.height() as f32 / u32::pow( 2, max_zoom) as f32,
+            -1.0 * source.height() as f32 / u32::pow( 2, max_zoom) as f32,
+            source.width() as f32 /u32::pow( 2, max_zoom) as f32,
         ],
-        mpp: [0.0, 0.0],
+        image_metadata: image_process.image_metadata,
+        slide_metadata: image_process.slide_metadata,
         peak_memory: PEAK_ALLOC.peak_usage_as_mb(),
     });
 
@@ -261,6 +139,7 @@ fn zoom_then_crop(
     max_zoom: u32,
     ratio_size: u32,
     verbose: bool,
+    debug: bool,
 ) {
     let zoom_image = if zoom == max_zoom {
         &source
@@ -284,14 +163,14 @@ fn zoom_then_crop(
             }
             let tile =
                 if (x * 256) + 256 < zoom_image.width() && (y * 256) + 256 < zoom_image.height() {
-                    if verbose {
+                    if debug {
                         println!("Zoom-then-crop: Genered tile {} by cropping", name);
                     }
                     zoom_image.crop_imm(x * 256, y * 256, 256, 256)
                 } else {
                     let mut buffer = black_tile.clone();
                     let cropbuffer = zoom_image.crop_imm(x * 256, y * 256, 256, 256);
-                    if verbose {
+                    if debug {
                         println!(
                             "Zoom-then-crop: Genered tile {} by partial cropping {}x{}",
                             name,
@@ -317,6 +196,7 @@ fn crop_then_zoom(
     zoom: u32,
     tile_size_at_zoom: u32,
     verbose: bool,
+    debug: bool,
 ) {
     if verbose {
         println!("Tile size at zoom {}: {}", zoom, tile_size_at_zoom);
@@ -333,7 +213,7 @@ fn crop_then_zoom(
             let tile = if (x * tile_size_at_zoom) + tile_size_at_zoom < source.width()
                 && (y * tile_size_at_zoom) + tile_size_at_zoom < source.height()
             {
-                if verbose {
+                if debug {
                     println!(
                         "Crop-then-zoom: Generated tile {} ({}x{}) by cropping",
                         name, tile_size_at_zoom, tile_size_at_zoom
@@ -359,7 +239,7 @@ fn crop_then_zoom(
                     tile_size_at_zoom,
                     tile_size_at_zoom,
                 );
-                if verbose {
+                if debug {
                     println!(
                         "Crop-then-zoom: Generated tile {} ({}x{}) by partial cropping",
                         name,

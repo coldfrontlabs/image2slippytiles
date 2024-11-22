@@ -517,6 +517,7 @@ dependencies = [
  "clap",
  "image",
  "openslide-rs",
+ "openslide-sys",
  "peak_alloc",
  "serde",
  "serde_json",
