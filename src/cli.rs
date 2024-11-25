@@ -24,12 +24,8 @@ pub struct Cli {
     pub memory: bool,
 
     /// Starting zoom level
-    #[arg(short = 'z', long, default_value = "0")]
+    #[arg(short = 'z', long, default_value = "2")]
     pub zoom: u32,
-
-    /// End zoom level
-    #[arg(short = 'x', long)]
-    pub end_zoom: Option<u32>,
 
     /// Output JSON metadata
     #[arg(short = 'j', long)]

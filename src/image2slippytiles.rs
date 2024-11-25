@@ -4,7 +4,7 @@ use image::{DynamicImage, GenericImage, GenericImageView};
 use std::fs;
 use openslide_rs::*;
 use crate::metadata::*;
-use crate::globals::*;
+use crate::globals::PEAK_ALLOC;
 use crate::cli::Cli;
 use crate::chunkable::*;
 
@@ -25,7 +25,7 @@ pub fn image2slippytiles(args: Cli, image_process: ImageProcess) -> Result<TileM
         ));
     }
 
-    let mut end_zoom = args.end_zoom.unwrap_or(max_zoom);
+    let mut end_zoom = max_zoom;
     if end_zoom < args.zoom {
         return Err(format!(
             "The end zoom level must be greater than the start zoom level. {} is less than {}.",
@@ -94,13 +94,6 @@ pub fn image2slippytiles(args: Cli, image_process: ImageProcess) -> Result<TileM
         } else {
             // At closer to the native image resolution, it requires less memory to crop first, but more CPU.
             crop_then_zoom(&source, &dir, zoom, tile_size_at_zoom, args.verbose, args.debug);
-        }
-        if args.memory {
-            //memory_check(args.json)
-            let (current_mem, peak_mem) = memory_check();
-
-            println!("This program currently uses {} MB of RAM.", current_mem);
-            println!("The max amount that was used {} MB", peak_mem)
         }
     }
     return Ok(TileMetadata {

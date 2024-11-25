@@ -1,5 +1,4 @@
 use serde::{Deserialize, Serialize};
-use image::DynamicImage;
 use crate::chunkable::ChunkableImageSource;
 
 pub struct ImageProcess {
