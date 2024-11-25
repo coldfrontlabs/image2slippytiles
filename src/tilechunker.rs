@@ -9,11 +9,9 @@ use crate::chunkable::*;
 #[derive(Debug)]
 
 pub struct Tile {
-    chunk_id: (u32, u32),
     tile_id: (u32, u32, u32),
     size: u32,
     chunk_bounds: (u32, u32, u32, u32),
-    image_bounds: (u32, u32, u32, u32),
 }
 
 pub struct ImageTile {
@@ -93,11 +91,9 @@ pub fn tilechunker(args: Cli, final_tile_size: u32, chunk_zoom: u32, source: imp
                             println!("Tile ID: {:?}, Bounds in chunk: {:?}, Bounds in image: {:?}", tile_id, tile_bounds_in_chunk, tile_bounds_in_image);
                         }
                         let tile = Tile {
-                            chunk_id: chunk_id,
                             tile_id: tile_id,
                             size: tile_size,
                             chunk_bounds: tile_bounds_in_chunk,
-                            image_bounds: tile_bounds_in_image,
                         };
 
                         if tile_bounds_in_image.0 > image_metadata.width || tile_bounds_in_image.1 > image_metadata.height {
@@ -129,8 +125,27 @@ pub fn tilechunker(args: Cli, final_tile_size: u32, chunk_zoom: u32, source: imp
         }
     }
 
+    for z in (args.zoom..max_chunk_zoom).rev() {
+        let tiles_at_zoom = u32::pow(2, z);
+        for x in 0..tiles_at_zoom {
+            for y in 0..tiles_at_zoom {
+                let tile_id = (z, x, y);
+                let tile = Tile {
+                    tile_id: tile_id,
+                    size: 0,
+                    chunk_bounds: (0, 0, 0, 0),
+                };
+
+                if args.debug {
+                    println!("Compiling tile {:?}", tile_id);
+                }
+                generate_compiled_tile(tile, final_tile_size, &path).save(&path);
+            }
+        }
+    }
+
     TileMetadata {
-        min_zoom: max_chunk_zoom,
+        min_zoom: args.zoom,
         max_zoom: max_zoom,
         bounds: [
             0.0,
@@ -142,9 +157,11 @@ pub fn tilechunker(args: Cli, final_tile_size: u32, chunk_zoom: u32, source: imp
         image_metadata: source.get_image_metadata(),
         slide_metadata: source.get_slide_metadata(),
     }
-
 }
 
+/**
+ * Generate a full tile from a set of source tiles.
+ */
 pub fn generate_full_tile(source: &DynamicImage, tile: Tile, tile_size: u32) -> ImageTile {
     let mut tile_img = source.crop_imm(
         tile.chunk_bounds.0,
@@ -161,6 +178,9 @@ pub fn generate_full_tile(source: &DynamicImage, tile: Tile, tile_size: u32) -> 
     };
 }
 
+/**
+ * Generate a partial tile from a set of source tiles.
+ */
 pub fn generate_partial_tile(source: &DynamicImage, tile: Tile, tile_size: u32) -> ImageTile {
     let mut buffer = image::DynamicImage::from(image::ImageBuffer::from_pixel(
         tile.size,
@@ -174,8 +194,6 @@ pub fn generate_partial_tile(source: &DynamicImage, tile: Tile, tile_size: u32) 
         tile.size,
         tile.size,
     );
-    println!("Selected from {}x{} at size {}x{}, got size {}x{}", tile.chunk_bounds.0, tile.chunk_bounds.1, tile.size, tile.size, cropbuffer.width(), cropbuffer.height());
-
     cropbuffer
         .pixels()
         .for_each(|(x, y, pixel)| buffer.put_pixel(x, y, pixel));
@@ -183,6 +201,38 @@ pub fn generate_partial_tile(source: &DynamicImage, tile: Tile, tile_size: u32) 
     if tile.size != tile_size {
         buffer = buffer.resize(tile_size, tile_size, FilterType::Nearest);
     }
+
+    return ImageTile {
+        image: buffer,
+        tile_id: tile.tile_id,
+    };
+}
+
+/**
+ * Generate a compiled tile from a set of source tiles.
+ */
+pub fn generate_compiled_tile(tile: Tile, tile_size: u32, path: &String) -> ImageTile {
+    let source_zoom = tile.tile_id.0 + 1;
+    let source_tiles = [
+        (tile.tile_id.1 * 2, tile.tile_id.2 * 2, 0, 0),
+        (tile.tile_id.1 * 2 + 1, tile.tile_id.2 * 2, 1, 0),
+        (tile.tile_id.1 * 2, tile.tile_id.2 * 2 + 1, 0, 1),
+        (tile.tile_id.1 * 2 + 1, tile.tile_id.2 * 2 + 1, 1, 1),
+    ];
+
+    let mut buffer = image::DynamicImage::from(image::ImageBuffer::from_pixel(
+        tile_size * 2,
+        tile_size * 2,
+        image::Rgba([0 as u8, 0 as u8, 0 as u8, 0 as u8]),
+    ));
+
+    for source_tile in source_tiles {
+        let source_file = format!("{}/{}/{}/{}.png", path, source_zoom, source_tile.0, source_tile.1);
+        if let Ok(tile_img) = image::open(source_file) {
+            buffer.copy_from(&tile_img, source_tile.2 * tile_size, source_tile.3 * tile_size).unwrap();
+        }
+    }
+    buffer = buffer.resize(tile_size, tile_size, FilterType::Nearest);
 
     return ImageTile {
         image: buffer,
