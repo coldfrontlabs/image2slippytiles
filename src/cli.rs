@@ -30,4 +30,8 @@ pub struct Cli {
     /// Output JSON metadata
     #[arg(short = 'j', long)]
     pub json: bool,
+
+    /// Output type (png, jpg, webp)
+    #[arg(short = 't', long, default_value = "png")]
+    pub format: String,
 }

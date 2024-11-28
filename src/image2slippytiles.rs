@@ -105,6 +105,7 @@ pub fn image2slippytiles(args: Cli, image_process: ImageProcess) -> Result<TileM
             -1.0 * source.height() as f32 / u32::pow( 2, max_zoom) as f32,
             source.width() as f32 /u32::pow( 2, max_zoom) as f32,
         ],
+        image_type: args.format,
         image_metadata: image_process.image_metadata,
         slide_metadata: image_process.slide_metadata,
         peak_memory: PEAK_ALLOC.peak_usage_as_mb(),

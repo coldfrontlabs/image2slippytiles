@@ -20,11 +20,17 @@ pub struct ImageTile {
 }
 
 impl ImageTile {
-    pub fn save(&self, path: &str) {
+    pub fn save(&self, path: &str, format: &str) {
         fs::create_dir(format!("{}/{}", path, self.tile_id.0)).unwrap_or_default();
         fs::create_dir(format!("{}/{}/{}", path, self.tile_id.0, self.tile_id.1)).unwrap_or_default();
-        let name: String = format!("{}/{}/{}/{}.png", path, self.tile_id.0, self.tile_id.1, self.tile_id.2);
-        self.image.save_with_format(name, image::ImageFormat::Png)
+        let name: String = format!("{}/{}/{}/{}.{}", path, self.tile_id.0, self.tile_id.1, self.tile_id.2, format);
+        let image_format = match format {
+            "png" => image::ImageFormat::Png,
+            "jpg" => image::ImageFormat::Jpeg,
+            "webp" => image::ImageFormat::WebP,
+            _ => image::ImageFormat::Png,
+        };
+        self.image.save_with_format(name, image_format)
             .unwrap();
     }
 }
@@ -106,13 +112,13 @@ pub fn tilechunker(args: Cli, final_tile_size: u32, chunk_zoom: u32, source: imp
                             if args.debug {
                                 println!("Partial tile");
                             }
-                            generate_partial_tile(&chunk, tile, final_tile_size).save(&path);
+                            generate_partial_tile(&chunk, tile, final_tile_size).save(&path, args.format.as_str());
                         }
                         else {
                             if args.debug {
                                 println!("Full tile");
                             }
-                            generate_full_tile(&chunk, tile, final_tile_size).save(&path);
+                            generate_full_tile(&chunk, tile, final_tile_size).save(&path, args.format.as_str());
                         }
 
                         count = count + 1;
@@ -139,7 +145,7 @@ pub fn tilechunker(args: Cli, final_tile_size: u32, chunk_zoom: u32, source: imp
                 if args.debug {
                     println!("Compiling tile {:?}", tile_id);
                 }
-                generate_compiled_tile(tile, final_tile_size, &path).save(&path);
+                generate_compiled_tile(tile, final_tile_size, &path, &args.format).save(&path, args.format.as_str());
             }
         }
     }
@@ -153,6 +159,7 @@ pub fn tilechunker(args: Cli, final_tile_size: u32, chunk_zoom: u32, source: imp
             -1.0 * image_metadata.height as f32 / u32::pow( 2, max_zoom) as f32,
             image_metadata.width as f32 /u32::pow( 2, max_zoom) as f32,
         ],
+        image_type: args.format,
         peak_memory: PEAK_ALLOC.peak_usage_as_mb(),
         image_metadata: source.get_image_metadata(),
         slide_metadata: source.get_slide_metadata(),
@@ -211,7 +218,7 @@ pub fn generate_partial_tile(source: &DynamicImage, tile: Tile, tile_size: u32) 
 /**
  * Generate a compiled tile from a set of source tiles.
  */
-pub fn generate_compiled_tile(tile: Tile, tile_size: u32, path: &String) -> ImageTile {
+pub fn generate_compiled_tile(tile: Tile, tile_size: u32, path: &String, format: &String) -> ImageTile {
     let source_zoom = tile.tile_id.0 + 1;
     let source_tiles = [
         (tile.tile_id.1 * 2, tile.tile_id.2 * 2, 0, 0),
@@ -227,7 +234,7 @@ pub fn generate_compiled_tile(tile: Tile, tile_size: u32, path: &String) -> Imag
     ));
 
     for source_tile in source_tiles {
-        let source_file = format!("{}/{}/{}/{}.png", path, source_zoom, source_tile.0, source_tile.1);
+        let source_file = format!("{}/{}/{}/{}.{}", path, source_zoom, source_tile.0, source_tile.1, format);
         if let Ok(tile_img) = image::open(source_file) {
             buffer.copy_from(&tile_img, source_tile.2 * tile_size, source_tile.3 * tile_size).unwrap();
         }
