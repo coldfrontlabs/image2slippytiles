@@ -41,4 +41,8 @@ pub struct Cli {
     /// Generate thumbnail.
     #[arg(short = 'T', long)]
     pub thumbnail: bool,
+
+    /// Thumbnail size.
+    #[arg(short = 's', long, default_value = "512")]
+    pub thumbnailsize: u32,
 }

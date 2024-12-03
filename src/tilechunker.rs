@@ -84,7 +84,7 @@ pub fn tilechunker(
 
     fs::create_dir(format!("{}", path)).unwrap_or_default();
 
-    let thumbnail_size = 512;
+    let thumbnail_size = args.thumbnailsize;
     let thumbnail_scale = thumbnail_size as f32 / max as f32;
     let thumbnail_chunk_size = (chunk_size as f32 * thumbnail_scale).floor() as u32;
 
