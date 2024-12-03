@@ -1,7 +1,7 @@
 use clap::Parser;
 use image2slippytiles::{chunkable, cli, tilechunker};
-use std::process::exit;
 use serde_json;
+use std::process::exit;
 
 fn main() {
     let args = crate::cli::Cli::parse();
@@ -12,12 +12,10 @@ fn main() {
         let tiles = tilechunker::tilechunker(args, 256, 4, img);
         if json {
             println!("{}", serde_json::to_string_pretty(&tiles).unwrap());
-        }
-        else {
+        } else {
             println!("{:#?}", tiles);
         }
-    }
-    else {
+    } else {
         println!("Error loading image");
         exit(1);
     }

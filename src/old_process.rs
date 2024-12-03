@@ -1,5 +1,5 @@
-use std::process::exit;
 use serde_json;
+use std::process::exit;
 
 mod image2slippytiles;
 
@@ -12,18 +12,14 @@ fn main() {
         if let Ok(tiles) = tiles_res {
             if json {
                 println!("{}", serde_json::to_string_pretty(&tiles).unwrap());
-            }
-            else {
+            } else {
                 println!("{:#?}", tiles);
             }
-
-        }
-        else {
+        } else {
             println!("Error converting image to tiles");
             exit(1);
         }
-    }
-    else {
+    } else {
         println!("Error loading image");
         exit(1);
     }

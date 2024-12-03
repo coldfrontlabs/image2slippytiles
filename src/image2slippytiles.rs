@@ -1,12 +1,11 @@
-
+use crate::chunkable::*;
+use crate::cli::Cli;
+use crate::globals::PEAK_ALLOC;
+use crate::metadata::*;
 use image::imageops::FilterType;
 use image::{DynamicImage, GenericImage, GenericImageView};
-use std::fs;
 use openslide_rs::*;
-use crate::metadata::*;
-use crate::globals::PEAK_ALLOC;
-use crate::cli::Cli;
-use crate::chunkable::*;
+use std::fs;
 
 pub fn image2slippytiles(args: Cli, image_process: ImageProcess) -> Result<TileMetadata, String> {
     let source = image_process.image.get_full_image();
@@ -93,7 +92,14 @@ pub fn image2slippytiles(args: Cli, image_process: ImageProcess) -> Result<TileM
             );
         } else {
             // At closer to the native image resolution, it requires less memory to crop first, but more CPU.
-            crop_then_zoom(&source, &dir, zoom, tile_size_at_zoom, args.verbose, args.debug);
+            crop_then_zoom(
+                &source,
+                &dir,
+                zoom,
+                tile_size_at_zoom,
+                args.verbose,
+                args.debug,
+            );
         }
     }
     return Ok(TileMetadata {
@@ -102,8 +108,8 @@ pub fn image2slippytiles(args: Cli, image_process: ImageProcess) -> Result<TileM
         bounds: [
             0.0,
             0.0,
-            -1.0 * source.height() as f32 / u32::pow( 2, max_zoom) as f32,
-            source.width() as f32 /u32::pow( 2, max_zoom) as f32,
+            -1.0 * source.height() as f32 / u32::pow(2, max_zoom) as f32,
+            source.width() as f32 / u32::pow(2, max_zoom) as f32,
         ],
         image_type: args.format,
         image_metadata: image_process.image_metadata,

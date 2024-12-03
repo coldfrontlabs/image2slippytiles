@@ -1,5 +1,5 @@
-use serde::{Deserialize, Serialize};
 use crate::chunkable::ChunkableImageSource;
+use serde::{Deserialize, Serialize};
 
 pub struct ImageProcess {
     pub image: ChunkableImageSource,
