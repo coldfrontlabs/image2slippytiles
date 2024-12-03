@@ -11,10 +11,10 @@ pub enum ChunkableImageSource {
 }
 
 impl ChunkSource for ChunkableImageSource {
-    fn get_chunk(&self, chunk_id: (u32, u32), chunk_width: u32, chunk_height: u32) -> DynamicImage {
+    fn get_chunk(&self, chunk_id: (u32, u32), chunk_width: u32, chunk_height: u32, colour: &[u8; 4]) -> DynamicImage {
         match self {
-            ChunkableImageSource::DynamicImage(img) => img.get_chunk(chunk_id, chunk_width, chunk_height),
-            ChunkableImageSource::Slide(slide) => slide.get_chunk(chunk_id, chunk_width, chunk_height),
+            ChunkableImageSource::DynamicImage(img) => img.get_chunk(chunk_id, chunk_width, chunk_height, colour),
+            ChunkableImageSource::Slide(slide) => slide.get_chunk(chunk_id, chunk_width, chunk_height, colour),
         }
     }
 
@@ -34,12 +34,12 @@ impl ChunkSource for ChunkableImageSource {
 }
 
 pub trait ChunkSource {
-    fn get_chunk(&self, chunk_id: (u32, u32), chunk_width: u32, chunk_height: u32) -> DynamicImage;
+    fn get_chunk(&self, chunk_id: (u32, u32), chunk_width: u32, chunk_height: u32, colour: &[u8; 4]) -> DynamicImage;
     fn get_image_metadata(&self) -> ImageMetadata;
     fn get_slide_metadata(&self) -> Option<SlideMetadata>;
 
-    fn get_full_image(&self) -> DynamicImage {
-        return self.get_chunk((0, 0), self.get_image_metadata().width, self.get_image_metadata().height);
+    fn get_full_image(&self, colour: &[u8; 4]) -> DynamicImage {
+        return self.get_chunk((0, 0), self.get_image_metadata().width, self.get_image_metadata().height, colour);
     }
 }
 

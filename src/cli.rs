@@ -34,4 +34,12 @@ pub struct Cli {
     /// Output type (png, jpg, webp)
     #[arg(short = 't', long, default_value = "png")]
     pub format: String,
+
+    /// Background color hex code: formatted as #RRGGBBAA
+    #[arg(short = 'c', long, default_value = "#00000000")]
+    pub colour: String,
+
+    /// Generate thumbnail.
+    #[arg(short = 'T', long)]
+    pub thumbnail: bool,
 }

@@ -1,3 +1,4 @@
+use hex_color::HexColor;
 use image::imageops::FilterType;
 use image::{DynamicImage, GenericImage, GenericImageView};
 use std::fs;
@@ -30,13 +31,19 @@ impl ImageTile {
             "webp" => image::ImageFormat::WebP,
             _ => image::ImageFormat::Png,
         };
-        self.image.save_with_format(name, image_format)
-            .unwrap();
+        if image_format == image::ImageFormat::Jpeg {
+            let rgb = self.image.to_rgb8();
+            rgb.save_with_format(name, image_format).unwrap();
+        } else {
+            self.image.save_with_format(name, image_format).unwrap();
+        }
     }
 }
 
 pub fn tilechunker(args: Cli, final_tile_size: u32, chunk_zoom: u32, source: impl ChunkSource) -> TileMetadata {
     let image_metadata = source.get_image_metadata();
+    let default_hexcolour = HexColor::parse_rgba(args.colour.as_str()).unwrap();
+    let default_colour = [default_hexcolour.r, default_hexcolour.g, default_hexcolour.b, default_hexcolour.a];
 
     let max = std::cmp::max(image_metadata.width, image_metadata.height);
     let scale = (max as f32 / 256.0).ceil() as u32;
@@ -57,6 +64,15 @@ pub fn tilechunker(args: Cli, final_tile_size: u32, chunk_zoom: u32, source: imp
 
     fs::create_dir(format!("{}", path)).unwrap_or_default();
 
+    let thumbnail_max = 256;
+    let thumbnail_scale = thumbnail_max as f32 / max as f32;
+    let thumbnail_chunk_size = (chunk_size as f32 * thumbnail_scale).floor() as u32;
+    let mut thumbnail: DynamicImage = image::DynamicImage::from(image::ImageBuffer::from_pixel(thumbnail_max, thumbnail_max, image::Rgba([0 as u8, 0 as u8, 0 as u8, 0 as u8])));
+    let thumbnail_offset = [
+        ((thumbnail_max - thumbnail_chunk_size * width_chunks) as f32 / 2.0).floor() as u32,
+        ((thumbnail_max  - thumbnail_chunk_size * height_chunks) as f32 / 2.0).floor() as u32,
+    ];
+
     for x in 0..width_chunks {
         for y in 0..height_chunks {
             let chunk_id = (x, y);
@@ -65,7 +81,14 @@ pub fn tilechunker(args: Cli, final_tile_size: u32, chunk_zoom: u32, source: imp
                 println!("Chunk ID: {:?}", chunk_id);
             }
     
-            let chunk = source.get_chunk(chunk_id, chunk_size, chunk_size);
+            let chunk = source.get_chunk(chunk_id, chunk_size, chunk_size, &default_colour);
+
+            if args.thumbnail {
+                let thumbnail_chunk = chunk.resize(thumbnail_chunk_size, thumbnail_chunk_size, FilterType::Lanczos3);
+                // println!("Chunk thumbnail {}x{} of {}x{} - {}x{} - {}", x, y, width_chunks, height_chunks, x * thumbnail_chunk_size, y * thumbnail_chunk_size, thumbnail_chunk_size);
+                thumbnail_chunk.pixels().for_each(|(i, j, pixel)| thumbnail.put_pixel(i + (x * thumbnail_chunk_size) + thumbnail_offset[0], j + (y * thumbnail_chunk_size) + thumbnail_offset[1], pixel));
+            }
+
             for z in max_chunk_zoom..max_zoom+1 {
                 let tile_size = u32::pow(2, max_zoom - z) * 256;
 
@@ -108,12 +131,18 @@ pub fn tilechunker(args: Cli, final_tile_size: u32, chunk_zoom: u32, source: imp
                             }
                             break;
                         }
+                        /*
+                         * Unneeded with chunking.
+                         * 
                         else if tile_bounds_in_image.2 > image_metadata.width || tile_bounds_in_image.3 > image_metadata.height {
                             if args.debug {
                                 println!("Partial tile");
                             }
-                            generate_partial_tile(&chunk, tile, final_tile_size).save(&path, args.format.as_str());
-                        }
+                            if tile_id.0 != 7 {
+                                continue;
+                            }
+                            generate_partial_tile(&chunk, tile, final_tile_size, &default_colour).save(&path, args.format.as_str());
+                        }*/
                         else {
                             if args.debug {
                                 println!("Full tile");
@@ -145,9 +174,16 @@ pub fn tilechunker(args: Cli, final_tile_size: u32, chunk_zoom: u32, source: imp
                 if args.debug {
                     println!("Compiling tile {:?}", tile_id);
                 }
-                generate_compiled_tile(tile, final_tile_size, &path, &args.format).save(&path, args.format.as_str());
+                if let Some(tileimage) = generate_compiled_tile(tile, final_tile_size, &path, &args.format, &default_colour) {
+                    tileimage.save(&path, args.format.as_str());
+                }
             }
         }
+    }
+
+
+    if args.thumbnail {
+        thumbnail.save_with_format(format!("{}/thumbnail.png", path), image::ImageFormat::Png).unwrap();
     }
 
     TileMetadata {
@@ -188,25 +224,28 @@ pub fn generate_full_tile(source: &DynamicImage, tile: Tile, tile_size: u32) -> 
 /**
  * Generate a partial tile from a set of source tiles.
  */
-pub fn generate_partial_tile(source: &DynamicImage, tile: Tile, tile_size: u32) -> ImageTile {
-    let mut buffer = image::DynamicImage::from(image::ImageBuffer::from_pixel(
+pub fn generate_partial_tile(source: &DynamicImage, tile: Tile, tile_size: u32, colour: &[u8; 4]) -> ImageTile {
+    let mut buffer: DynamicImage = image::DynamicImage::from(image::ImageBuffer::from_pixel(
         tile.size,
         tile.size,
-        image::Rgba([0 as u8, 0 as u8, 0 as u8, 0 as u8]),
+        image::Rgba(colour.clone()),
     ));
 
     let cropbuffer = source.crop_imm(
         tile.chunk_bounds.0,
         tile.chunk_bounds.1,
-        tile.size,
-        tile.size,
+        tile_size,
+        tile_size,
     );
+
     cropbuffer
         .pixels()
         .for_each(|(x, y, pixel)| buffer.put_pixel(x, y, pixel));
 
+    println!("Partial tile {:#?} is a partial tile: {}x{}", tile, cropbuffer.width(), cropbuffer.height());
+
     if tile.size != tile_size {
-        buffer = buffer.resize(tile_size, tile_size, FilterType::Nearest);
+        buffer = buffer.resize(tile_size, tile_size, FilterType::Lanczos3);
     }
 
     return ImageTile {
@@ -218,7 +257,7 @@ pub fn generate_partial_tile(source: &DynamicImage, tile: Tile, tile_size: u32) 
 /**
  * Generate a compiled tile from a set of source tiles.
  */
-pub fn generate_compiled_tile(tile: Tile, tile_size: u32, path: &String, format: &String) -> ImageTile {
+pub fn generate_compiled_tile(tile: Tile, tile_size: u32, path: &String, format: &String, colour: &[u8; 4]) -> Option<ImageTile> {
     let source_zoom = tile.tile_id.0 + 1;
     let source_tiles = [
         (tile.tile_id.1 * 2, tile.tile_id.2 * 2, 0, 0),
@@ -230,19 +269,26 @@ pub fn generate_compiled_tile(tile: Tile, tile_size: u32, path: &String, format:
     let mut buffer = image::DynamicImage::from(image::ImageBuffer::from_pixel(
         tile_size * 2,
         tile_size * 2,
-        image::Rgba([0 as u8, 0 as u8, 0 as u8, 0 as u8]),
+        image::Rgba(colour.clone()),
     ));
+
+    let mut oops_all_blanks = true;
 
     for source_tile in source_tiles {
         let source_file = format!("{}/{}/{}/{}.{}", path, source_zoom, source_tile.0, source_tile.1, format);
         if let Ok(tile_img) = image::open(source_file) {
+            oops_all_blanks = false;
             buffer.copy_from(&tile_img, source_tile.2 * tile_size, source_tile.3 * tile_size).unwrap();
         }
     }
-    buffer = buffer.resize(tile_size, tile_size, FilterType::Nearest);
+    if oops_all_blanks {
+        return None;
+    }
 
-    return ImageTile {
+    buffer = buffer.resize(tile_size, tile_size, FilterType::Lanczos3);
+
+    return Some(ImageTile {
         image: buffer,
         tile_id: tile.tile_id,
-    };
+    });
 }
