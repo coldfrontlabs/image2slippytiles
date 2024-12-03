@@ -15,8 +15,8 @@ pub struct Cli {
     pub debug: bool,
 
     /// Output directory ('tiles' in the current directory if no option provided).
-    #[arg(short = 'o', long)]
-    pub output: Option<String>,
+    #[arg(short = 'o', long, default_value = "./tiles")]
+    pub output: String,
 
     /// Output memory usage
     #[arg(short = 'm', long)]

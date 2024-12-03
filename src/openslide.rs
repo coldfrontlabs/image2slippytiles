@@ -1,7 +1,7 @@
 use crate::chunkable::*;
 use crate::cli::Cli;
 use crate::metadata::*;
-use image::{DynamicImage, GenericImage, GenericImageView};
+use image::DynamicImage;
 use openslide_rs::*;
 use std::path::Path;
 
@@ -17,13 +17,7 @@ pub fn load_openslide_image(args: &Cli) -> Option<ChunkableImageSource> {
 }
 
 impl ChunkSource for OpenSlide {
-    fn get_chunk(
-        &self,
-        chunk_id: (u32, u32),
-        chunk_width: u32,
-        chunk_height: u32,
-        default_colour: &[u8; 4],
-    ) -> DynamicImage {
+    fn get_chunk(&self, chunk_id: (u32, u32), chunk_width: u32, chunk_height: u32) -> DynamicImage {
         let dimensions = self.get_level_dimensions(0).unwrap();
 
         let mut size_w = dimensions.w - (chunk_id.0 * chunk_width);
@@ -50,21 +44,6 @@ impl ChunkSource for OpenSlide {
                 },
             })
             .unwrap();
-
-        if (size_w < chunk_width) || (size_h < chunk_height) {
-            // println!("Chunk {}x{} is a partial chunk: {}x{}", chunk_id.0, chunk_id.1, size_w, size_h);
-            let mut buffer = image::DynamicImage::from(image::ImageBuffer::from_pixel(
-                chunk_width,
-                chunk_height,
-                image::Rgba(default_colour.clone()),
-            ));
-
-            let source = DynamicImage::ImageRgba8(img);
-            source
-                .pixels()
-                .for_each(|(x, y, pixel)| buffer.put_pixel(x, y, pixel));
-            return buffer;
-        }
         return DynamicImage::ImageRgba8(img);
     }
 

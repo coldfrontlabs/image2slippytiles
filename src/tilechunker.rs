@@ -62,7 +62,7 @@ pub fn tilechunker(
     let max = std::cmp::max(image_metadata.width, image_metadata.height);
     let scale = (max as f32 / 256.0).ceil() as u32;
     let max_zoom = (scale as f32).log2().ceil() as u32;
-    let path = args.output.unwrap_or("./tiles".to_string());
+    let path = args.output;
 
     let chunk_size = u32::pow(2, chunk_zoom) * final_tile_size;
 
@@ -84,18 +84,17 @@ pub fn tilechunker(
 
     fs::create_dir(format!("{}", path)).unwrap_or_default();
 
-    let thumbnail_max = 256;
-    let thumbnail_scale = thumbnail_max as f32 / max as f32;
+    let thumbnail_size = 512;
+    let thumbnail_scale = thumbnail_size as f32 / max as f32;
     let thumbnail_chunk_size = (chunk_size as f32 * thumbnail_scale).floor() as u32;
+
     let mut thumbnail: DynamicImage = image::DynamicImage::from(image::ImageBuffer::from_pixel(
-        thumbnail_max,
-        thumbnail_max,
+        thumbnail_size,
+        thumbnail_size,
         image::Rgba([0 as u8, 0 as u8, 0 as u8, 0 as u8]),
     ));
-    let thumbnail_offset = [
-        ((thumbnail_max - thumbnail_chunk_size * width_chunks) as f32 / 2.0).floor() as u32,
-        ((thumbnail_max - thumbnail_chunk_size * height_chunks) as f32 / 2.0).floor() as u32,
-    ];
+
+    let mut thumbnail_actual = [0, 0];
 
     for x in 0..width_chunks {
         for y in 0..height_chunks {
@@ -105,22 +104,55 @@ pub fn tilechunker(
                 println!("Chunk ID: {:?}", chunk_id);
             }
 
-            let chunk = source.get_chunk(chunk_id, chunk_size, chunk_size, &default_colour);
+            let mut chunk = source.get_chunk(chunk_id, chunk_size, chunk_size);
 
             if args.thumbnail {
-                let thumbnail_chunk = chunk.resize(
-                    thumbnail_chunk_size,
-                    thumbnail_chunk_size,
+                let thumbnail_chunk: DynamicImage = chunk.resize(
+                    (thumbnail_chunk_size as f32 * (chunk.width() as f32 / chunk_size as f32))
+                        .ceil() as u32,
+                    (thumbnail_chunk_size as f32 * (chunk.height() as f32 / chunk_size as f32))
+                        .ceil() as u32,
                     FilterType::Lanczos3,
                 );
-                // println!("Chunk thumbnail {}x{} of {}x{} - {}x{} - {}", x, y, width_chunks, height_chunks, x * thumbnail_chunk_size, y * thumbnail_chunk_size, thumbnail_chunk_size);
+
+                if y == 0 {
+                    thumbnail_actual[0] += thumbnail_chunk.width();
+                }
+
+                if x == 0 {
+                    thumbnail_actual[1] += thumbnail_chunk.height();
+                }
+
                 thumbnail_chunk.pixels().for_each(|(i, j, pixel)| {
-                    thumbnail.put_pixel(
-                        i + (x * thumbnail_chunk_size) + thumbnail_offset[0],
-                        j + (y * thumbnail_chunk_size) + thumbnail_offset[1],
-                        pixel,
-                    )
+                    let placement = [
+                        i as i32 + (x * thumbnail_chunk_size) as i32,
+                        j as i32 + (y * thumbnail_chunk_size) as i32,
+                    ];
+
+                    if placement[0] > 0
+                        && placement[0] < thumbnail_size as i32
+                        && placement[1] > 0
+                        && placement[1] < thumbnail_size as i32
+                    {
+                        thumbnail.put_pixel(placement[0] as u32, placement[1] as u32, pixel);
+                    }
                 });
+            }
+
+            if chunk.width() != chunk_size || chunk.height() != chunk_size {
+                if args.debug {
+                    println!("Partial chunk");
+                }
+                let mut chunk_with_background =
+                    image::DynamicImage::from(image::ImageBuffer::from_pixel(
+                        chunk_size,
+                        chunk_size,
+                        image::Rgba(default_colour.clone()),
+                    ));
+                chunk
+                    .pixels()
+                    .for_each(|(x, y, pixel)| chunk_with_background.put_pixel(x, y, pixel));
+                chunk = chunk_with_background;
             }
 
             for z in max_chunk_zoom..max_zoom + 1 {
@@ -236,6 +268,7 @@ pub fn tilechunker(
 
     if args.thumbnail {
         thumbnail
+            .crop(0, 0, thumbnail_actual[0], thumbnail_actual[1])
             .save_with_format(format!("{}/thumbnail.png", path), image::ImageFormat::Png)
             .unwrap();
     }
