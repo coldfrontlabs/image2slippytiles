@@ -19,3 +19,9 @@ rustc-link-lib = ["static:openslide"]
 
 [package.metadata.appimage]
 auto_link = true
+
+[profile.release]
+strip = true
+opt-level = "z"
+codegen-units = 1
+lto = true
