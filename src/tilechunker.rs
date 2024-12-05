@@ -6,6 +6,7 @@ use hex_color::HexColor;
 use image::imageops::FilterType;
 use image::{DynamicImage, GenericImage, GenericImageView};
 use std::fs;
+use std::time::Instant;
 
 #[derive(Debug)]
 
@@ -49,6 +50,7 @@ pub fn tilechunker(
     final_tile_size: u32,
     chunk_zoom: u32,
     source: impl ChunkSource,
+    start_time: Instant,
 ) -> TileMetadata {
     let image_metadata = source.get_image_metadata();
     let default_hexcolour = HexColor::parse_rgba(args.colour.as_str()).unwrap();
@@ -84,13 +86,17 @@ pub fn tilechunker(
 
     fs::create_dir(format!("{}", path)).unwrap_or_default();
 
-    let thumbnail_size = args.thumbnailsize;
-    let thumbnail_scale = thumbnail_size as f32 / max as f32;
-    let thumbnail_chunk_size = (chunk_size as f32 * thumbnail_scale).floor() as u32;
+    let thumbnail_scale = args.thumbnailsize as f32 / std::cmp::min(image_metadata.width, image_metadata.height) as f32;
+    let thumbnail_chunk_size = (chunk_size as f32 * thumbnail_scale).ceil() as u32;
+
+    let thumbnail_size = [
+        (width_chunks * thumbnail_chunk_size) as u32,
+        (height_chunks * thumbnail_chunk_size) as u32,
+    ];
 
     let mut thumbnail: DynamicImage = image::DynamicImage::from(image::ImageBuffer::from_pixel(
-        thumbnail_size,
-        thumbnail_size,
+        thumbnail_size[0],
+        thumbnail_size[1],
         image::Rgba([0 as u8, 0 as u8, 0 as u8, 0 as u8]),
     ));
 
@@ -130,9 +136,9 @@ pub fn tilechunker(
                     ];
 
                     if placement[0] > 0
-                        && placement[0] < thumbnail_size as i32
+                        && placement[0] < thumbnail_size[0] as i32
                         && placement[1] > 0
-                        && placement[1] < thumbnail_size as i32
+                        && placement[1] < thumbnail_size[1] as i32
                     {
                         thumbnail.put_pixel(placement[0] as u32, placement[1] as u32, pixel);
                     }
@@ -269,7 +275,8 @@ pub fn tilechunker(
     if args.thumbnail {
         thumbnail
             .crop(0, 0, thumbnail_actual[0], thumbnail_actual[1])
-            .save_with_format(format!("{}/thumbnail.png", path), image::ImageFormat::Png)
+            .to_rgb8()
+            .save_with_format(format!("{}/thumbnail.jpg", path), image::ImageFormat::Jpeg)
             .unwrap();
     }
 
@@ -284,6 +291,7 @@ pub fn tilechunker(
         ],
         image_type: args.format,
         peak_memory: PEAK_ALLOC.peak_usage_as_mb(),
+        duration: start_time.elapsed().as_secs_f32(),
         image_metadata: source.get_image_metadata(),
         slide_metadata: source.get_slide_metadata(),
     }

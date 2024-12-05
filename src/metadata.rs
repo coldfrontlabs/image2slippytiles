@@ -25,6 +25,7 @@ pub struct TileMetadata {
     pub max_zoom: u32,
     pub bounds: [f32; 4],
     pub peak_memory: f32,
+    pub duration: f32,
     pub image_type: String,
     pub image_metadata: ImageMetadata,
     pub slide_metadata: Option<SlideMetadata>,
