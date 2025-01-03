@@ -1,5 +1,5 @@
 use clap::Parser;
-use image2slippytiles::{chunkable, cli, tilechunker};
+use image2slippytiles::{chunkable, cli, thumbnail, tilechunker};
 use serde_json;
 use std::process::exit;
 use std::time::Instant;
@@ -7,6 +7,12 @@ use std::time::Instant;
 fn main() {
     let start_time = Instant::now();
     let args = crate::cli::Cli::parse();
+
+    if args.thumbnailfromtiles {
+        thumbnail::thumbnailfromtiles(args);
+        exit(0);
+    }
+
     let source = chunkable::load_image(&args);
 
     if let Some(img) = source {

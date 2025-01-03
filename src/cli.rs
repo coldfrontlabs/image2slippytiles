@@ -45,4 +45,8 @@ pub struct Cli {
     /// Thumbnail size.
     #[arg(short = 's', long, default_value = "512")]
     pub thumbnailsize: u32,
+
+    /// Generate a thumbnail from an existing tileset.
+    #[arg(long)]
+    pub thumbnailfromtiles: bool,
 }

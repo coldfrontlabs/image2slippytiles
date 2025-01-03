@@ -4,6 +4,13 @@ This tools converts images and slide scans to slippy tiles quickly and efficient
 
 ## Using
 
+To run on Rocky 9, install openslide libraries:
+```
+dnf install dnf-plugins-core
+dnf copr enable @openslide/openslide
+dnf install -y openslide
+```
+
 ## Building
 
 To build on Rocky 9, the Openslide library must be installed.
