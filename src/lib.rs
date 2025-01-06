@@ -4,5 +4,5 @@ pub mod dynamicimage;
 pub mod globals;
 pub mod metadata;
 pub mod openslide;
-pub mod tilechunker;
 pub mod thumbnail;
+pub mod tilechunker;

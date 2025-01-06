@@ -86,7 +86,8 @@ pub fn tilechunker(
 
     fs::create_dir(format!("{}", path)).unwrap_or_default();
 
-    let thumbnail_scale = args.thumbnailsize as f32 / std::cmp::min(image_metadata.width, image_metadata.height) as f32;
+    let thumbnail_scale = args.thumbnailsize as f32
+        / std::cmp::min(image_metadata.width, image_metadata.height) as f32;
     let thumbnail_chunk_size = (chunk_size as f32 * thumbnail_scale).ceil() as u32;
 
     let thumbnail_size = [
