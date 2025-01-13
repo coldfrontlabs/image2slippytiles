@@ -49,4 +49,8 @@ pub struct Cli {
     /// Generate a thumbnail from an existing tileset.
     #[arg(long)]
     pub thumbnailfromtiles: bool,
+
+    /// Generate a thumbnail from an existing zoomify tileset.
+    #[arg(long)]
+    pub thumbnailfromzoomifytiles: bool,
 }

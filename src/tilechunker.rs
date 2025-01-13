@@ -62,7 +62,7 @@ pub fn tilechunker(
     ];
 
     let max = std::cmp::max(image_metadata.width, image_metadata.height);
-    let scale = (max as f32 / 256.0).ceil() as u32;
+    let scale = (max as f32 / final_tile_size as f32).ceil() as u32;
     let max_zoom = (scale as f32).log2().ceil() as u32;
     let path = args.output;
 

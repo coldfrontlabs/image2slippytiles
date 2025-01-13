@@ -8,7 +8,7 @@ fn main() {
     let start_time = Instant::now();
     let args = crate::cli::Cli::parse();
 
-    if args.thumbnailfromtiles {
+    if args.thumbnailfromtiles || args.thumbnailfromzoomifytiles {
         thumbnail::thumbnailfromtiles(args);
         exit(0);
     }

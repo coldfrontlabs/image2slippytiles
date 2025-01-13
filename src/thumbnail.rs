@@ -3,11 +3,23 @@ use image::{DynamicImage, GenericImageView};
 use std::path::Path;
 
 pub fn thumbnailfromtiles(args: Cli) {
-    let min_tile_path = format!("{}/0/0/0.{}", args.output, args.format);
+    let min_tile_path_res = tile_path(
+        &args.output,
+        0,
+        0,
+        0,
+        &args.format,
+        args.thumbnailfromzoomifytiles,
+    );
+    if min_tile_path_res.is_err() {
+        println!("{}", min_tile_path_res.unwrap_err());
+        return;
+    }
+    let min_tile_path = min_tile_path_res.unwrap();
     let min_tile = image::open(&min_tile_path).unwrap();
     let min_size = real_min_size(&min_tile);
 
-    let canary_tile_path = format!("{}/1/0/0.{}", args.output, args.format);
+    let canary_tile_path = tile_path( &args.output, 0, 0, 1, &args.format, args.thumbnailfromzoomifytiles).unwrap();
     let canary_tile = image::open(&canary_tile_path).unwrap();
     let tile_size = canary_tile.width();
 
@@ -24,10 +36,18 @@ pub fn thumbnailfromtiles(args: Cli) {
 
     for x in 0..zoom.pow(2) {
         for y in 0..zoom.pow(2) {
-            let tile_path = format!("{}/{}/{}/{}.{}", args.output, zoom, x, y, args.format);
-            if !Path::new(&tile_path).exists() {
+            let tile_path_res = tile_path(
+                &args.output,
+                x,
+                y,
+                zoom,
+                &args.format,
+                args.thumbnailfromzoomifytiles,
+            );
+            if tile_path_res.is_err() {
                 break;
             }
+            let tile_path = tile_path_res.unwrap();
             let tile = image::open(&tile_path).unwrap();
             let x_offset = x * tile_size;
             let y_offset = y * tile_size;
@@ -63,4 +83,33 @@ pub fn real_min_size(image: &DynamicImage) -> (u32, u32) {
         }
     }
     (width, height)
+}
+
+fn tile_path(
+    output: &String,
+    x: u32,
+    y: u32,
+    z: u32,
+    format: &String,
+    zoomify: bool,
+) -> Result<String, String> {
+    if zoomify {
+        for g in 0..32 {
+            let file = format!("{}/TileGroup{}/{}-{}-{}.{}", output, g, z, x, y, format);
+            if Path::new(&file).exists() {
+                return Ok(file);
+            }
+        }
+        Err(format!(
+            "File not found for {}/TileGroupX/{}-{}-{}.{}",
+            output, z, x, y, format
+        ))
+    } else {
+        let path = format!("{}/{}/{}/{}.{}", output, z, x, y, format);
+        if Path::new(&path).exists() {
+            Ok(path)
+        } else {
+            Err(format!("File not found for {}", path))
+        }
+    }
 }
