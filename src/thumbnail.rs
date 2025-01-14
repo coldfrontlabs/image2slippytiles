@@ -34,6 +34,8 @@ pub fn thumbnailfromtiles(args: Cli) {
         ((zoom.pow(2) * tile_size) as f32 * scale_y).floor() as u32,
     );
 
+    let mut final_size = [0,0];
+
     for x in 0..zoom.pow(2) {
         for y in 0..zoom.pow(2) {
             let tile_path_res = tile_path(
@@ -52,9 +54,16 @@ pub fn thumbnailfromtiles(args: Cli) {
             let x_offset = x * tile_size;
             let y_offset = y * tile_size;
             image::imageops::overlay(&mut buffer, &tile, x_offset as i64, y_offset as i64);
+
+            if x == 0 {
+                final_size[1] += tile.height();
+            }
+            if y == 0 {
+                final_size[0] += tile.width();
+            }
         }
     }
-
+    buffer = buffer.crop_imm(0, 0, final_size[0], final_size[1]);
     let rgb = buffer.to_rgb8();
     rgb.save_with_format(
         format!("{}/thumbnail.jpg", args.output),
