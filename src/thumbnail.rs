@@ -19,7 +19,7 @@ pub fn thumbnailfromtiles(args: Cli) {
     let min_tile = image::open(&min_tile_path).unwrap();
     let min_size = real_min_size(&min_tile);
 
-    let canary_tile_path = tile_path( &args.output, 0, 0, 1, &args.format, args.thumbnailfromzoomifytiles).unwrap();
+    let canary_tile_path = tile_path( &args.output, 0, 0, 4, &args.format, args.thumbnailfromzoomifytiles).unwrap();
     let canary_tile = image::open(&canary_tile_path).unwrap();
     let tile_size = canary_tile.width();
 
