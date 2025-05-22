@@ -5,6 +5,7 @@ use crate::openslide::load_openslide_image;
 use image::DynamicImage;
 use openslide_rs::OpenSlide;
 use std::path::Path;
+use libvips::VipsImage;
 use image::ImageFormat;
 
 const OPENSLIDE_FORMATS: [&str; 12] = [
@@ -14,6 +15,7 @@ const OPENSLIDE_FORMATS: [&str; 12] = [
 pub enum ChunkableImageSource {
     DynamicImage(DynamicImage),
     Slide(Box<OpenSlide>),
+    //Vips(VipsImage),
 }
 
 impl ChunkSource for ChunkableImageSource {
@@ -32,6 +34,9 @@ impl ChunkSource for ChunkableImageSource {
             ChunkableImageSource::Slide(slide) => {
                 slide.get_chunk(chunk_id, chunk_width, chunk_height)
             }
+            ChunkableImageSource::Vips(vips) => {
+                vips.get_chunk(chunk_id, chunk_width, chunk_height)
+            }
         }
     }
 
@@ -39,6 +44,7 @@ impl ChunkSource for ChunkableImageSource {
         match self {
             ChunkableImageSource::DynamicImage(img) => img.get_image_metadata(),
             ChunkableImageSource::Slide(slide) => slide.get_image_metadata(),
+            ChunkableImageSource::Vips(vips) => vips.get_image_metadata(),
         }
     }
 
@@ -46,6 +52,7 @@ impl ChunkSource for ChunkableImageSource {
         match self {
             ChunkableImageSource::DynamicImage(img) => img.get_slide_metadata(),
             ChunkableImageSource::Slide(slide) => slide.get_slide_metadata(),
+            ChunkableImageSource::Vips(vips) => vips.get_slide_metadata(),
         }
     }
 }

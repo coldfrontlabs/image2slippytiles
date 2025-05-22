@@ -6,3 +6,4 @@ pub mod metadata;
 pub mod openslide;
 pub mod thumbnail;
 pub mod tilechunker;
+pub mod vips;
