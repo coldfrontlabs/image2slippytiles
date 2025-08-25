@@ -43,11 +43,11 @@ pub trait ChunkSource {
     fn get_slide_metadata(&self) -> Option<SlideMetadata>;
 
     fn get_full_image(&self) -> DynamicImage {
-        return self.get_chunk(
+        self.get_chunk(
             (0, 0),
             self.get_image_metadata().width,
             self.get_image_metadata().height,
-        );
+        )
     }
 }
 
@@ -55,8 +55,8 @@ pub fn load_image(args: &Cli) -> Option<ChunkableImageSource> {
     let path = Path::new(&args.filename);
 
     if path.extension().unwrap() == "svs" || path.extension().unwrap().to_str().unwrap() == "dcm" {
-        return load_openslide_image(args);
+        load_openslide_image(args)
     } else {
-        return load_dynamic_image(args);
+        load_dynamic_image(args)
     }
 }

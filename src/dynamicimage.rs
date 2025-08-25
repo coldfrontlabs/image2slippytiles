@@ -35,17 +35,17 @@ impl ChunkSource for DynamicImage {
             chunk_height,
         );
 
-        return chunk;
+        chunk
     }
 
     fn get_image_metadata(&self) -> ImageMetadata {
-        return ImageMetadata {
+        ImageMetadata {
             width: self.width(),
             height: self.height(),
-        };
+        }
     }
 
     fn get_slide_metadata(&self) -> Option<SlideMetadata> {
-        return None;
+        None
     }
 }

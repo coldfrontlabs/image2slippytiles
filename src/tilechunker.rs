@@ -52,6 +52,10 @@ pub fn tilechunker(
     source: impl ChunkSource,
     start_time: Instant,
 ) -> TileMetadata {
+    if args.debug {
+        println!("Generating tiles from image ...")
+    }
+
     let image_metadata = source.get_image_metadata();
     let default_hexcolour = HexColor::parse_rgba(args.colour.as_str()).unwrap();
     let default_colour = [
@@ -71,7 +75,10 @@ pub fn tilechunker(
     let width_chunks = (image_metadata.width as f32 / chunk_size as f32).ceil() as u32;
     let height_chunks = (image_metadata.height as f32 / chunk_size as f32).ceil() as u32;
 
-    let max_chunk_zoom = max_zoom - chunk_zoom;
+    let mut max_chunk_zoom = 0;
+    if chunk_size < max_zoom {
+        max_chunk_zoom = max_zoom - chunk_zoom;
+    }
 
     if args.verbose {
         println!(
@@ -81,6 +88,12 @@ pub fn tilechunker(
         println!(
             "Max zoom is {}, can generate up to zoom level {} from each chunk",
             max_zoom, max_chunk_zoom
+        );
+    }
+
+    if args.debug {
+        println!("Max dimension of source image: {}\nFinal tile size: {}\nChunk Zoom: {}\nScale: {}\nMax zoom: {}\nOutput path: {}\nChunk Size: {}\nWidth Chunks: {}\nHeight Chunks: {}\nMax Chunks zoom:{}",
+            max,final_tile_size,chunk_zoom,scale,max_zoom,path,chunk_size,width_chunks,height_chunks,max_chunk_zoom
         );
     }
 
@@ -148,7 +161,7 @@ pub fn tilechunker(
 
             if chunk.width() != chunk_size || chunk.height() != chunk_size {
                 if args.debug {
-                    println!("Partial chunk");
+                    println!("Generate a partial chunk");
                 }
                 let mut chunk_with_background =
                     image::DynamicImage::from(image::ImageBuffer::from_pixel(
@@ -162,6 +175,9 @@ pub fn tilechunker(
                 chunk = chunk_with_background;
             }
 
+            if args.debug {
+                println!("Generating tiles from chunk");
+            }
             for z in max_chunk_zoom..max_zoom + 1 {
                 let tile_size = u32::pow(2, max_zoom - z) * 256;
 
@@ -200,7 +216,7 @@ pub fn tilechunker(
                             );
                         }
                         let tile = Tile {
-                            tile_id: tile_id,
+                            tile_id,
                             size: tile_size,
                             chunk_bounds: tile_bounds_in_chunk,
                         };
@@ -243,16 +259,27 @@ pub fn tilechunker(
                     );
                 }
             }
+            if args.debug {
+                println!("Done tile generation for chunk.")
+            }
         }
+    }
+    if args.debug {
+        println!("Done processing all chunks.");
+        println!(
+            "Generating lower zoom tiles from parent tiles - From {} to {}",
+            args.zoom, max_chunk_zoom
+        );
     }
 
     for z in (args.zoom..max_chunk_zoom).rev() {
         let tiles_at_zoom = u32::pow(2, z);
+
         for x in 0..tiles_at_zoom {
             for y in 0..tiles_at_zoom {
                 let tile_id = (z, x, y);
                 let tile = Tile {
-                    tile_id: tile_id,
+                    tile_id,
                     size: 0,
                     chunk_bounds: (0, 0, 0, 0),
                 };
@@ -273,6 +300,11 @@ pub fn tilechunker(
         }
     }
 
+    if args.debug {
+        println!("Done processing all lower zoom tiles.");
+        println!("Generating thumbnail.")
+    }
+
     if args.thumbnail {
         thumbnail
             .crop(0, 0, thumbnail_actual[0], thumbnail_actual[1])
@@ -283,7 +315,7 @@ pub fn tilechunker(
 
     TileMetadata {
         min_zoom: args.zoom,
-        max_zoom: max_zoom,
+        max_zoom,
         bounds: [
             0.0,
             0.0,
