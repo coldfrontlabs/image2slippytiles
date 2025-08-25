@@ -97,7 +97,7 @@ pub fn tilechunker(
         );
     }
 
-    fs::create_dir(format!("{}", path)).unwrap_or_default();
+    fs::create_dir(path.to_string()).unwrap_or_default();
 
     let thumbnail_scale = args.thumbnailsize as f32
         / std::cmp::min(image_metadata.width, image_metadata.height) as f32;
@@ -111,7 +111,7 @@ pub fn tilechunker(
     let mut thumbnail: DynamicImage = image::DynamicImage::from(image::ImageBuffer::from_pixel(
         thumbnail_size[0],
         thumbnail_size[1],
-        image::Rgba([0 as u8, 0 as u8, 0 as u8, 0 as u8]),
+        image::Rgba([0_u8, 0_u8, 0_u8, 0_u8]),
     ));
 
     let mut thumbnail_actual = [0, 0];
@@ -167,7 +167,7 @@ pub fn tilechunker(
                     image::DynamicImage::from(image::ImageBuffer::from_pixel(
                         chunk_size,
                         chunk_size,
-                        image::Rgba(default_colour.clone()),
+                        image::Rgba(default_colour),
                     ));
                 chunk
                     .pixels()
@@ -249,7 +249,7 @@ pub fn tilechunker(
                                 .save(&path, args.format.as_str());
                         }
 
-                        count = count + 1;
+                        count += 1;
                     }
                 }
                 if args.verbose {
@@ -343,10 +343,10 @@ pub fn generate_full_tile(source: &DynamicImage, tile: Tile, tile_size: u32) -> 
     if tile.size != tile_size {
         tile_img = tile_img.resize(tile_size, tile_size, FilterType::Nearest);
     }
-    return ImageTile {
+    ImageTile {
         image: tile_img,
         tile_id: tile.tile_id,
-    };
+    }
 }
 
 /**
@@ -361,7 +361,7 @@ pub fn generate_partial_tile(
     let mut buffer: DynamicImage = image::DynamicImage::from(image::ImageBuffer::from_pixel(
         tile.size,
         tile.size,
-        image::Rgba(colour.clone()),
+        image::Rgba(*colour),
     ));
 
     let cropbuffer = source.crop_imm(
@@ -386,10 +386,10 @@ pub fn generate_partial_tile(
         buffer = buffer.resize(tile_size, tile_size, FilterType::Lanczos3);
     }
 
-    return ImageTile {
+    ImageTile {
         image: buffer,
         tile_id: tile.tile_id,
-    };
+    }
 }
 
 /**
@@ -413,7 +413,7 @@ pub fn generate_compiled_tile(
     let mut buffer = image::DynamicImage::from(image::ImageBuffer::from_pixel(
         tile_size * 2,
         tile_size * 2,
-        image::Rgba(colour.clone()),
+        image::Rgba(*colour),
     ));
 
     let mut oops_all_blanks = true;
@@ -440,8 +440,8 @@ pub fn generate_compiled_tile(
 
     buffer = buffer.resize(tile_size, tile_size, FilterType::Lanczos3);
 
-    return Some(ImageTile {
+    Some(ImageTile {
         image: buffer,
         tile_id: tile.tile_id,
-    });
+    })
 }

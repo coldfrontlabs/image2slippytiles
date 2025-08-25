@@ -7,7 +7,7 @@ use std::path::Path;
 pub fn load_dynamic_image(args: &Cli) -> Option<ChunkableImageSource> {
     let path = Path::new(&args.filename);
 
-    let mut img = ImageReader::open(&path).unwrap();
+    let mut img = ImageReader::open(path).unwrap();
 
     if args.verbose {
         println!("format: {:?}", img.format());
@@ -28,14 +28,12 @@ pub fn load_dynamic_image(args: &Cli) -> Option<ChunkableImageSource> {
 
 impl ChunkSource for DynamicImage {
     fn get_chunk(&self, chunk_id: (u32, u32), chunk_width: u32, chunk_height: u32) -> DynamicImage {
-        let chunk = self.crop_imm(
+        self.crop_imm(
             chunk_id.0 * chunk_width,
             chunk_id.1 * chunk_height,
             chunk_width,
             chunk_height,
-        );
-
-        chunk
+        )
     }
 
     fn get_image_metadata(&self) -> ImageMetadata {

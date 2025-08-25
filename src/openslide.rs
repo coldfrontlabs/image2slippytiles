@@ -13,7 +13,7 @@ pub fn load_openslide_image(args: &Cli) -> Option<ChunkableImageSource> {
         println!("Properties: {:#?}", slide.properties().openslide_properties);
     }
 
-    return Some(ChunkableImageSource::Slide(slide));
+    Some(ChunkableImageSource::Slide(slide))
 }
 
 impl ChunkSource for OpenSlide {
@@ -44,19 +44,19 @@ impl ChunkSource for OpenSlide {
                 },
             })
             .unwrap();
-        return DynamicImage::ImageRgba8(img);
+        DynamicImage::ImageRgba8(img)
     }
 
     fn get_image_metadata(&self) -> ImageMetadata {
         let dimensions = self.get_level_dimensions(0).unwrap();
-        return ImageMetadata {
+        ImageMetadata {
             width: dimensions.w,
             height: dimensions.h,
-        };
+        }
     }
 
     fn get_slide_metadata(&self) -> Option<SlideMetadata> {
-        return Some(SlideMetadata {
+        Some(SlideMetadata {
             mpp_x: *self
                 .properties()
                 .openslide_properties
@@ -69,6 +69,6 @@ impl ChunkSource for OpenSlide {
                 .mpp_y
                 .clone()
                 .get_or_insert(0.0),
-        });
+        })
     }
 }
