@@ -76,7 +76,7 @@ pub fn tilechunker(
     let height_chunks = (image_metadata.height as f32 / chunk_size as f32).ceil() as u32;
 
     let mut max_chunk_zoom = 0;
-    if chunk_size < max_zoom {
+    if chunk_zoom < max_zoom {
         max_chunk_zoom = max_zoom - chunk_zoom;
     }
 
@@ -97,7 +97,7 @@ pub fn tilechunker(
         );
     }
 
-    fs::create_dir(path.to_string()).unwrap_or_default();
+    fs::create_dir(&path).unwrap_or_default();
 
     let thumbnail_scale = args.thumbnailsize as f32
         / std::cmp::min(image_metadata.width, image_metadata.height) as f32;
@@ -182,7 +182,7 @@ pub fn tilechunker(
                 let tile_size = u32::pow(2, max_zoom - z) * 256;
 
                 if args.verbose {
-                    println!("Zoom level: {}, pre-resize tile size: {}", z, tile_size);
+                    println!("Zoom level: {}, pre-resize tile size: {}, from chunk size: {}", z, tile_size, chunk_size);
                 }
                 let mut count = 0;
 
