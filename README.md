@@ -2,9 +2,9 @@
 
 ## About
 
-### Description
-
 This tools converts images and slide scans to slippy tiles quickly and efficiently.
+
+Demo: https://files.coldfrontlabs.ca/tiling-demo/
 
 ### Supported input images types
 
@@ -25,13 +25,39 @@ dnf copr enable @openslide/openslide
 dnf install -y openslide
 ```
 
-
 ### Quick-start
 
 Basic generating tiles from an image or slide:
 ```
 ./image2slippytiles giant_image.png
 ```
+
+### Integration with Leaflet
+
+After generating tiles, metadata about the tileset will be outputed, similar to:
+
+```
+TileMetadata {
+    min_zoom: 0,
+    max_zoom: 3,
+    bounds: [
+        0.0,
+        0.0,
+        -106.625,
+        160.0,
+    ],
+    peak_memory: 114.44011,
+    duration: 0.28572604,
+    image_type: "png",
+    image_metadata: ImageMetadata {
+        width: 1280,
+        height: 853,
+    },
+    slide_metadata: None,
+}
+```
+
+The min and max zoom levels and the bounds can be used directly to setup the tileset with leaflet.
 
 ### Options
 

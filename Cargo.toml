@@ -3,12 +3,12 @@ name = "image2slippytiles"
 version = "1.0.1"
 edition = "2021"
 license-file = "LICENSE-LGPL"
-description = "This program generates image tiles in the slippytile format from giant images and slide scan images such as SVS and DCM."
+description = "This program generates image tiles in the slippytile format (compatible with leaflet.js) from giant images and slide scan images such as SVS and DCM."
 homepage = "https://github.com/coldfrontlabs/image2slippytiles"
 repository =  "https://github.com/coldfrontlabs/image2slippytiles"
 readme = "README.md"
 categories = ["command-line-utilities", "multimedia::images", "science", "science::bioinformatics", "science::geo"]
-keywords = ["images", "slippytiles", "tiles", "openslide", "map"]
+keywords = ["images", "slippytiles", "tiles", "openslide", "map", "leaflet"]
 
 [dependencies]
 clap = { version = "4.5.26", features = ["derive"] }
