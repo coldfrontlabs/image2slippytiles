@@ -7,7 +7,7 @@ use openslide_rs::OpenSlide;
 use std::path::Path;
 pub enum ChunkableImageSource {
     DynamicImage(DynamicImage),
-    Slide(OpenSlide),
+    Slide(Box<OpenSlide>),
 }
 
 impl ChunkSource for ChunkableImageSource {

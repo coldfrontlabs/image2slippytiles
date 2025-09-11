@@ -182,7 +182,10 @@ pub fn tilechunker(
                 let tile_size = u32::pow(2, max_zoom - z) * 256;
 
                 if args.verbose {
-                    println!("Zoom level: {}, pre-resize tile size: {}, from chunk size: {}", z, tile_size, chunk_size);
+                    println!(
+                        "Zoom level: {}, pre-resize tile size: {}, from chunk size: {}",
+                        z, tile_size, chunk_size
+                    );
                 }
                 let mut count = 0;
 

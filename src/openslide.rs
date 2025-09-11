@@ -13,7 +13,7 @@ pub fn load_openslide_image(args: &Cli) -> Option<ChunkableImageSource> {
         println!("Properties: {:#?}", slide.properties().openslide_properties);
     }
 
-    Some(ChunkableImageSource::Slide(slide))
+    Some(ChunkableImageSource::Slide(Box::new(slide)))
 }
 
 impl ChunkSource for OpenSlide {
