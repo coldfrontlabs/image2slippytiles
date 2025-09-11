@@ -58,8 +58,6 @@ Options:
   -V, --version                        Print version
 ```
 
-
-
 ## Building
 
 To build on Rocky 9, the Openslide library must be installed.
@@ -70,4 +68,26 @@ First, install EPEL, then run:
 dnf install dnf-plugins-core
 dnf copr enable @openslide/openslide
 dnf install openslide-devel libwebp-devel jbigkit-devel
+```
+
+### AppImage
+
+The appimage version can be built with cargo-appimage - https://crates.io/crates/cargo-appimage
+
+By running: `cargo appimage`
+
+## Tests
+
+`jq` must be installed for testing.
+
+There are acceptance tests for 6 sample images in various formats and sizes. The acceptance test:
+
+- Compiles release version of the program
+- Tiles the images
+- Compare the hash of the generated files to the expected results
+
+Tests can be run with:
+
+```
+./tests/acceptance-test.sh
 ```
