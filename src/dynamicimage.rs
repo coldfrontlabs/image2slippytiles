@@ -4,7 +4,7 @@ use crate::metadata::*;
 use image::{DynamicImage, ImageReader};
 use std::path::Path;
 
-pub fn load_dynamic_image(args: &Cli) -> Option<ChunkableImageSource> {
+pub fn load_dynamic_image(args: &Cli) -> Result<ChunkableImageSource, String> {
     let path = Path::new(&args.filename);
 
     let mut img = ImageReader::open(path).unwrap();
@@ -18,10 +18,9 @@ pub fn load_dynamic_image(args: &Cli) -> Option<ChunkableImageSource> {
     let source = img.decode();
 
     match source {
-        Ok(source) => Some(ChunkableImageSource::DynamicImage(source)),
+        Ok(source) => Ok(ChunkableImageSource::DynamicImage(source)),
         Err(e) => {
-            println!("Error: {}", e);
-            None
+            Err(format!("Error: {}", e))
         }
     }
 }

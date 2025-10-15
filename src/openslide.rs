@@ -5,15 +5,21 @@ use image::DynamicImage;
 use openslide_rs::*;
 use std::path::Path;
 
-pub fn load_openslide_image(args: &Cli) -> Option<ChunkableImageSource> {
+pub fn load_openslide_image(args: &Cli) -> Result<ChunkableImageSource, String> {
     let path = Path::new(&args.filename);
-    let slide = OpenSlide::new(path).unwrap();
+    let slide_res = OpenSlide::new(path);
+    match slide_res {
+        Ok(slide) => {
+            if args.verbose {
+                println!("Properties: {:#?}", slide.properties().openslide_properties);
+            }
 
-    if args.verbose {
-        println!("Properties: {:#?}", slide.properties().openslide_properties);
+            Ok(ChunkableImageSource::Slide(Box::new(slide)))
+        },
+        Err(e) => {
+            Err(e.to_string())
+        }
     }
-
-    Some(ChunkableImageSource::Slide(Box::new(slide)))
 }
 
 impl ChunkSource for OpenSlide {

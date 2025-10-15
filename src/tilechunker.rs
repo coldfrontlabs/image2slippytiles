@@ -51,7 +51,7 @@ pub fn tilechunker(
     chunk_zoom: u32,
     source: impl ChunkSource,
     start_time: Instant,
-) -> TileMetadata {
+) -> Result<TileMetadata, String> {
     if args.debug {
         println!("Generating tiles from image ...")
     }
@@ -224,6 +224,8 @@ pub fn tilechunker(
                             chunk_bounds: tile_bounds_in_chunk,
                         };
 
+                        timeout(args.timeout, start_time)?;
+
                         if tile_bounds_in_image.0 > image_metadata.width
                             || tile_bounds_in_image.1 > image_metadata.height
                         {
@@ -232,18 +234,6 @@ pub fn tilechunker(
                             }
                             break;
                         }
-                        /*
-                         * Unneeded with chunking.
-                         *
-                        else if tile_bounds_in_image.2 > image_metadata.width || tile_bounds_in_image.3 > image_metadata.height {
-                            if args.debug {
-                                println!("Partial tile");
-                            }
-                            if tile_id.0 != 7 {
-                                continue;
-                            }
-                            generate_partial_tile(&chunk, tile, final_tile_size, &default_colour).save(&path, args.format.as_str());
-                        }*/
                         else {
                             if args.debug {
                                 println!("Full tile");
@@ -290,6 +280,9 @@ pub fn tilechunker(
                 if args.debug {
                     println!("Compiling tile {:?}", tile_id);
                 }
+
+                timeout(args.timeout, start_time)?;
+
                 if let Some(tileimage) = generate_compiled_tile(
                     tile,
                     final_tile_size,
@@ -316,7 +309,7 @@ pub fn tilechunker(
             .unwrap();
     }
 
-    TileMetadata {
+    Ok(TileMetadata {
         min_zoom: args.zoom,
         max_zoom,
         bounds: [
@@ -330,7 +323,7 @@ pub fn tilechunker(
         duration: start_time.elapsed().as_secs_f32(),
         image_metadata: source.get_image_metadata(),
         slide_metadata: source.get_slide_metadata(),
-    }
+    })
 }
 
 /**
@@ -348,49 +341,6 @@ pub fn generate_full_tile(source: &DynamicImage, tile: Tile, tile_size: u32) -> 
     }
     ImageTile {
         image: tile_img,
-        tile_id: tile.tile_id,
-    }
-}
-
-/**
- * Generate a partial tile from a set of source tiles.
- */
-pub fn generate_partial_tile(
-    source: &DynamicImage,
-    tile: Tile,
-    tile_size: u32,
-    colour: &[u8; 4],
-) -> ImageTile {
-    let mut buffer: DynamicImage = image::DynamicImage::from(image::ImageBuffer::from_pixel(
-        tile.size,
-        tile.size,
-        image::Rgba(*colour),
-    ));
-
-    let cropbuffer = source.crop_imm(
-        tile.chunk_bounds.0,
-        tile.chunk_bounds.1,
-        tile_size,
-        tile_size,
-    );
-
-    cropbuffer
-        .pixels()
-        .for_each(|(x, y, pixel)| buffer.put_pixel(x, y, pixel));
-
-    println!(
-        "Partial tile {:#?} is a partial tile: {}x{}",
-        tile,
-        cropbuffer.width(),
-        cropbuffer.height()
-    );
-
-    if tile.size != tile_size {
-        buffer = buffer.resize(tile_size, tile_size, FilterType::Lanczos3);
-    }
-
-    ImageTile {
-        image: buffer,
         tile_id: tile.tile_id,
     }
 }
@@ -447,4 +397,15 @@ pub fn generate_compiled_tile(
         image: buffer,
         tile_id: tile.tile_id,
     })
+}
+
+pub fn timeout(timeout: u64, start_time: Instant) -> Result<(), String> {
+    if timeout == 0 {
+        return Ok(());
+    }
+
+    if start_time.elapsed().as_secs() > timeout {
+        return Err(format!("Timeout exceeded: Took {}, allowed: {}", start_time.elapsed().as_secs_f32(), timeout).to_string());
+    }
+    Ok(())
 }

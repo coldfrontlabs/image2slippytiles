@@ -1,6 +1,6 @@
 [package]
 name = "image2slippytiles"
-version = "1.0.1"
+version = "1.1.0"
 edition = "2021"
 license-file = "LICENSE-LGPL"
 description = "This program generates image tiles in the slippytile format (compatible with leaflet.js) from giant images and slide scan images such as SVS and DCM."
@@ -11,18 +11,15 @@ categories = ["command-line-utilities", "multimedia::images", "science", "scienc
 keywords = ["images", "slippytiles", "tiles", "openslide", "map", "leaflet"]
 
 [dependencies]
-clap = { version = "4.5.26", features = ["derive"] }
-fast_image_resize = "5.1.1"
+clap = { version = "4.5.49", features = ["derive"] }
+fast_image_resize = "5.3.0"
 hex_color = "3.0.0"
-image = "0.25.6"
-openslide-rs = "2.3.0"
-openslide-sys = "1.0.7"
+image = "0.25.8"
+openslide-rs = "2.4.0"
+openslide-sys = "1.0.8"
 peak_alloc = "0.3.0"
-serde = {version="1.0.217", features=["derive"] }
-serde_json = "1.0.135"
-
-[target.x86_64-unknown-linux-gnu]
-rustc-link-lib = ["static:openslide"]
+serde = {version="1.0.218", features=["derive"] }
+serde_json = "1.0.145"
 
 [package.metadata.appimage]
 auto_link = true

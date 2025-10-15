@@ -18,16 +18,28 @@ fn main() {
 
     let source = chunkable::load_image(&args);
 
-    if let Some(img) = source {
-        let json = args.json;
-        let tiles = tilechunker::tilechunker(args, 256, 4, img, start_time);
-        if json {
-            println!("{}", serde_json::to_string_pretty(&tiles).unwrap());
-        } else {
-            println!("{:#?}", tiles);
+    //if let Ok(img) = source {
+    match source {
+        Ok(img) => {
+            let json = args.json;
+            let tiles_res = tilechunker::tilechunker(args, 256, 4, img, start_time);
+            match tiles_res {
+                Ok(tiles) => {
+                    if json {
+                        println!("{}", serde_json::to_string_pretty(&tiles).unwrap());
+                    } else {
+                        println!("{:#?}", tiles);
+                    }
+                }
+                Err(message) => {
+                    println!("{}", message);
+                    exit(1);
+                }
+            }
+        },
+        Err(message) => {
+            println!("Error loading image: {}", message);
+            exit(1);
         }
-    } else {
-        println!("Error loading image");
-        exit(1);
     }
 }

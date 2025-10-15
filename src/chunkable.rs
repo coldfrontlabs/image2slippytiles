@@ -51,12 +51,18 @@ pub trait ChunkSource {
     }
 }
 
-pub fn load_image(args: &Cli) -> Option<ChunkableImageSource> {
+pub fn load_image(args: &Cli) -> Result<ChunkableImageSource, String> {
     let path = Path::new(&args.filename);
+    let extension_res = path.extension();
 
-    if path.extension().unwrap() == "svs" || path.extension().unwrap().to_str().unwrap() == "dcm" {
-        load_openslide_image(args)
-    } else {
-        load_dynamic_image(args)
+    match extension_res {
+        Some(extension) => {
+            if extension == "svs" || extension == "dcm" {
+                load_openslide_image(args)
+            } else {
+                load_dynamic_image(args)
+            }
+        }
+        None => Err(format!("Unknown file type in file: {}", args.filename))
     }
 }

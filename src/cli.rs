@@ -26,6 +26,10 @@ pub struct Cli {
     #[arg(short = 'z', long, default_value = "0")]
     pub zoom: u32,
 
+    /// Time in seconds that the process may run for
+    #[arg(long, default_value = "10800")]
+    pub timeout: u64,
+
     /// Output JSON metadata
     #[arg(short = 'j', long)]
     pub json: bool,

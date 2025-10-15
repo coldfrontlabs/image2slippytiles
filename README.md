@@ -76,6 +76,7 @@ Options:
   -j, --json                           Output JSON metadata
   -t, --format <FORMAT>                Output type (png, jpg, webp) [default: png]
   -c, --colour <COLOUR>                Background color hex code: formatted as #RRGGBBAA [default: #00000000]
+      --timeout <SECONDS>              Time in seconds that the process may run for [default: 10800]
   -T, --thumbnail                      Generate thumbnail
   -s, --thumbnailsize <THUMBNAILSIZE>  Thumbnail size [default: 512]
       --thumbnailfromtiles             Generate a thumbnail from an existing tileset
