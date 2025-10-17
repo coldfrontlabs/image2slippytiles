@@ -63,6 +63,6 @@ pub fn load_image(args: &Cli) -> Result<ChunkableImageSource, String> {
                 load_dynamic_image(args)
             }
         }
-        None => Err(format!("Unknown file type in file: {}", args.filename))
+        None => Err(format!("Unknown file type in file: {}", args.filename)),
     }
 }

@@ -2,13 +2,15 @@ use clap::Parser;
 use image2slippytiles::{chunkable, cli, thumbnail, tilechunker};
 use std::process::exit;
 use std::time::Instant;
+use tokio;
 
-fn main() {
+#[tokio::main]
+async fn main() {
     let start_time = Instant::now();
     let mut args = crate::cli::Cli::parse();
 
     if args.thumbnailfromtiles || args.thumbnailfromzoomifytiles {
-        thumbnail::thumbnailfromtiles(args);
+        thumbnail::thumbnailfromtiles(&args, None);
         exit(0);
     }
 
@@ -18,11 +20,10 @@ fn main() {
 
     let source = chunkable::load_image(&args);
 
-    //if let Ok(img) = source {
     match source {
         Ok(img) => {
             let json = args.json;
-            let tiles_res = tilechunker::tilechunker(args, 256, 4, img, start_time);
+            let tiles_res = tilechunker::tilechunker(args, 256, 4, img, start_time).await;
             match tiles_res {
                 Ok(tiles) => {
                     if json {
@@ -36,7 +37,7 @@ fn main() {
                     exit(1);
                 }
             }
-        },
+        }
         Err(message) => {
             println!("Error loading image: {}", message);
             exit(1);

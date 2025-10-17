@@ -15,10 +15,8 @@ pub fn load_openslide_image(args: &Cli) -> Result<ChunkableImageSource, String> 
             }
 
             Ok(ChunkableImageSource::Slide(Box::new(slide)))
-        },
-        Err(e) => {
-            Err(e.to_string())
         }
+        Err(e) => Err(e.to_string()),
     }
 }
 

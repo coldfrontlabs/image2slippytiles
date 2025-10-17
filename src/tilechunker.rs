@@ -2,6 +2,8 @@ use crate::chunkable::*;
 use crate::cli::Cli;
 use crate::globals::PEAK_ALLOC;
 use crate::metadata::*;
+use crate::thumbnail::*;
+use futures::future::join_all;
 use hex_color::HexColor;
 use image::imageops::FilterType;
 use image::{DynamicImage, GenericImage, GenericImageView};
@@ -45,7 +47,7 @@ impl ImageTile {
     }
 }
 
-pub fn tilechunker(
+pub async fn tilechunker(
     args: Cli,
     final_tile_size: u32,
     chunk_zoom: u32,
@@ -68,7 +70,6 @@ pub fn tilechunker(
     let max = std::cmp::max(image_metadata.width, image_metadata.height);
     let scale = (max as f32 / final_tile_size as f32).ceil() as u32;
     let max_zoom = (scale as f32).log2().ceil() as u32;
-    let path = args.output;
 
     let chunk_size = u32::pow(2, chunk_zoom) * final_tile_size;
 
@@ -92,30 +93,57 @@ pub fn tilechunker(
     }
 
     if args.debug {
-        println!("Max dimension of source image: {}\nFinal tile size: {}\nChunk Zoom: {}\nScale: {}\nMax zoom: {}\nOutput path: {}\nChunk Size: {}\nWidth Chunks: {}\nHeight Chunks: {}\nMax Chunks zoom:{}",
-            max,final_tile_size,chunk_zoom,scale,max_zoom,path,chunk_size,width_chunks,height_chunks,max_chunk_zoom
+        println!(
+            "Max dimension of source image: {}\nFinal tile size: {}\nChunk Zoom: {}\nScale: {}\nMax zoom: {}\nOutput path: {}\nChunk Size: {}\nWidth Chunks: {}\nHeight Chunks: {}\nMax Chunks zoom:{}",
+            max,
+            final_tile_size,
+            chunk_zoom,
+            scale,
+            max_zoom,
+            &args.output,
+            chunk_size,
+            width_chunks,
+            height_chunks,
+            max_chunk_zoom
         );
     }
 
-    fs::create_dir(&path).unwrap_or_default();
+    /*
+    let mut total_tiles = 1;
+    for z in 1..max_zoom+1 {
+        let tile_size = u32::pow(2, max_zoom - z) * final_tile_size;
+        let width_tiles_at_zoom = (width_chunks * chunk_size) / tile_size;
+        let height_tiles_at_zoom = (height_chunks * chunk_size) / tile_size;
+        total_tiles += width_tiles_at_zoom * height_tiles_at_zoom;
+    }
+    print!("Total tiles needed: {}", total_tiles);
+    */
 
+    fs::create_dir(&args.output).unwrap_or_default();
+
+    /*
     let thumbnail_scale = args.thumbnailsize as f32
         / std::cmp::min(image_metadata.width, image_metadata.height) as f32;
     let thumbnail_chunk_size = (chunk_size as f32 * thumbnail_scale).ceil() as u32;
+
 
     let thumbnail_size = [
         (width_chunks * thumbnail_chunk_size) as u32,
         (height_chunks * thumbnail_chunk_size) as u32,
     ];
+    */
+    /*
+        let mut thumbnail: DynamicImage = image::DynamicImage::from(image::ImageBuffer::from_pixel(
+            thumbnail_size[0],
+            thumbnail_size[1],
+            image::Rgba([0_u8, 0_u8, 0_u8, 0_u8]),
+        ));
 
-    let mut thumbnail: DynamicImage = image::DynamicImage::from(image::ImageBuffer::from_pixel(
-        thumbnail_size[0],
-        thumbnail_size[1],
-        image::Rgba([0_u8, 0_u8, 0_u8, 0_u8]),
-    ));
+        let mut thumbnail_actual = [0, 0];
+    */
+    //let mut tiles_processed = 0;
 
-    let mut thumbnail_actual = [0, 0];
-
+    let mut handles = Vec::new();
     for x in 0..width_chunks {
         for y in 0..height_chunks {
             let chunk_id = (x, y);
@@ -125,40 +153,40 @@ pub fn tilechunker(
             }
 
             let mut chunk = source.get_chunk(chunk_id, chunk_size, chunk_size);
+            /*
+                        if args.thumbnail {
+                            let thumbnail_chunk: DynamicImage = chunk.resize(
+                                (thumbnail_chunk_size as f32 * (chunk.width() as f32 / chunk_size as f32))
+                                    .ceil() as u32,
+                                (thumbnail_chunk_size as f32 * (chunk.height() as f32 / chunk_size as f32))
+                                    .ceil() as u32,
+                                FilterType::Lanczos3,
+                            );
 
-            if args.thumbnail {
-                let thumbnail_chunk: DynamicImage = chunk.resize(
-                    (thumbnail_chunk_size as f32 * (chunk.width() as f32 / chunk_size as f32))
-                        .ceil() as u32,
-                    (thumbnail_chunk_size as f32 * (chunk.height() as f32 / chunk_size as f32))
-                        .ceil() as u32,
-                    FilterType::Lanczos3,
-                );
+                            if y == 0 {
+                                thumbnail_actual[0] += thumbnail_chunk.width();
+                            }
 
-                if y == 0 {
-                    thumbnail_actual[0] += thumbnail_chunk.width();
-                }
+                            if x == 0 {
+                                thumbnail_actual[1] += thumbnail_chunk.height();
+                            }
 
-                if x == 0 {
-                    thumbnail_actual[1] += thumbnail_chunk.height();
-                }
+                            thumbnail_chunk.pixels().for_each(|(i, j, pixel)| {
+                                let placement = [
+                                    i as i32 + (x * thumbnail_chunk_size) as i32,
+                                    j as i32 + (y * thumbnail_chunk_size) as i32,
+                                ];
 
-                thumbnail_chunk.pixels().for_each(|(i, j, pixel)| {
-                    let placement = [
-                        i as i32 + (x * thumbnail_chunk_size) as i32,
-                        j as i32 + (y * thumbnail_chunk_size) as i32,
-                    ];
-
-                    if placement[0] > 0
-                        && placement[0] < thumbnail_size[0] as i32
-                        && placement[1] > 0
-                        && placement[1] < thumbnail_size[1] as i32
-                    {
-                        thumbnail.put_pixel(placement[0] as u32, placement[1] as u32, pixel);
-                    }
-                });
-            }
-
+                                if placement[0] > 0
+                                    && placement[0] < thumbnail_size[0] as i32
+                                    && placement[1] > 0
+                                    && placement[1] < thumbnail_size[1] as i32
+                                {
+                                    thumbnail.put_pixel(placement[0] as u32, placement[1] as u32, pixel);
+                                }
+                            });
+                        }
+            */
             if chunk.width() != chunk_size || chunk.height() != chunk_size {
                 if args.debug {
                     println!("Generate a partial chunk");
@@ -178,85 +206,32 @@ pub fn tilechunker(
             if args.debug {
                 println!("Generating tiles from chunk");
             }
-            for z in max_chunk_zoom..max_zoom + 1 {
-                let tile_size = u32::pow(2, max_zoom - z) * 256;
 
-                if args.verbose {
-                    println!(
-                        "Zoom level: {}, pre-resize tile size: {}, from chunk size: {}",
-                        z, tile_size, chunk_size
-                    );
-                }
-                let mut count = 0;
-
-                let width_tiles_at_zoom = chunk_size / tile_size as u32;
-                let height_tiles_at_zoom = chunk_size / tile_size as u32;
-
-                for tilex in 0..width_tiles_at_zoom {
-                    for tiley in 0..height_tiles_at_zoom {
-                        let tile_id = (
-                            z,
-                            tilex + (x * width_tiles_at_zoom),
-                            tiley + (y * height_tiles_at_zoom),
-                        );
-                        let tile_bounds_in_chunk = (
-                            tilex * tile_size,
-                            tiley * tile_size,
-                            tilex * tile_size + tile_size,
-                            tiley * tile_size + tile_size,
-                        );
-                        let tile_bounds_in_image = (
-                            tile_bounds_in_chunk.0 + (x * chunk_size),
-                            tile_bounds_in_chunk.1 + (y * chunk_size),
-                            tile_bounds_in_chunk.2 + (x * chunk_size),
-                            tile_bounds_in_chunk.3 + (y * chunk_size),
-                        );
-
-                        if args.debug {
-                            println!(
-                                "Tile ID: {:?}, Bounds in chunk: {:?}, Bounds in image: {:?}",
-                                tile_id, tile_bounds_in_chunk, tile_bounds_in_image
-                            );
-                        }
-                        let tile = Tile {
-                            tile_id,
-                            size: tile_size,
-                            chunk_bounds: tile_bounds_in_chunk,
-                        };
-
-                        timeout(args.timeout, start_time)?;
-
-                        if tile_bounds_in_image.0 > image_metadata.width
-                            || tile_bounds_in_image.1 > image_metadata.height
-                        {
-                            if args.debug {
-                                println!("Tile out of bounds");
-                            }
-                            break;
-                        }
-                        else {
-                            if args.debug {
-                                println!("Full tile");
-                            }
-                            generate_full_tile(&chunk, tile, final_tile_size)
-                                .save(&path, args.format.as_str());
-                        }
-
-                        count += 1;
-                    }
-                }
-                if args.verbose {
-                    println!(
-                        "{} tiles at zoom level {} in chunk {}, {}\n",
-                        count, z, x, y
-                    );
-                }
-            }
+            // process chunk.
+            handles.push(tokio::spawn(process_chunk(
+                chunk,
+                x,
+                y,
+                max_zoom,
+                max_chunk_zoom,
+                chunk_size,
+                final_tile_size,
+                image_metadata.width,
+                image_metadata.height,
+                args.output.clone(),
+                args.format.clone(),
+                args.verbose,
+                args.debug,
+            )));
+            // Process chunk end.
+            timeout(args.timeout, start_time)?;
             if args.debug {
                 println!("Done tile generation for chunk.")
             }
         }
     }
+    join_all(handles).await;
+
     if args.debug {
         println!("Done processing all chunks.");
         println!(
@@ -286,11 +261,11 @@ pub fn tilechunker(
                 if let Some(tileimage) = generate_compiled_tile(
                     tile,
                     final_tile_size,
-                    &path,
+                    &args.output,
                     &args.format,
                     &default_colour,
                 ) {
-                    tileimage.save(&path, args.format.as_str());
+                    tileimage.save(&args.output, args.format.as_str());
                 }
             }
         }
@@ -302,11 +277,14 @@ pub fn tilechunker(
     }
 
     if args.thumbnail {
+        /*
         thumbnail
             .crop(0, 0, thumbnail_actual[0], thumbnail_actual[1])
             .to_rgb8()
             .save_with_format(format!("{}/thumbnail.jpg", path), image::ImageFormat::Jpeg)
             .unwrap();
+        */
+        thumbnailfromtiles(&args, Some((image_metadata.width, image_metadata.height)));
     }
 
     Ok(TileMetadata {
@@ -405,7 +383,93 @@ pub fn timeout(timeout: u64, start_time: Instant) -> Result<(), String> {
     }
 
     if start_time.elapsed().as_secs() > timeout {
-        return Err(format!("Timeout exceeded: Took {}, allowed: {}", start_time.elapsed().as_secs_f32(), timeout).to_string());
+        return Err(format!(
+            "Timeout exceeded: Took {}, allowed: {}",
+            start_time.elapsed().as_secs_f32(),
+            timeout
+        )
+        .to_string());
     }
     Ok(())
+}
+
+async fn process_chunk(
+    chunk: DynamicImage,
+    x: u32,
+    y: u32,
+    max_zoom: u32,
+    max_chunk_zoom: u32,
+    chunk_size: u32,
+    final_tile_size: u32,
+    image_metadata_width: u32,
+    image_metadata_height: u32,
+    output: String,
+    format: String,
+    verbose: bool,
+    debug: bool,
+) -> u32 {
+    let mut tiles_processed = 0;
+    for z in max_chunk_zoom..max_zoom + 1 {
+        let tile_size = u32::pow(2, max_zoom - z) * final_tile_size;
+
+        if verbose {
+            println!(
+                "Zoom level: {}, pre-resize tile size: {}, from chunk size: {}",
+                z, tile_size, chunk_size
+            );
+        }
+
+        let width_tiles_at_zoom = chunk_size / tile_size as u32;
+        let height_tiles_at_zoom = chunk_size / tile_size as u32;
+
+        for tilex in 0..width_tiles_at_zoom {
+            for tiley in 0..height_tiles_at_zoom {
+                let tile_id = (
+                    z,
+                    tilex + (x * width_tiles_at_zoom),
+                    tiley + (y * height_tiles_at_zoom),
+                );
+                let tile_bounds_in_chunk = (
+                    tilex * tile_size,
+                    tiley * tile_size,
+                    tilex * tile_size + tile_size,
+                    tiley * tile_size + tile_size,
+                );
+                let tile_bounds_in_image = (
+                    tile_bounds_in_chunk.0 + (x * chunk_size),
+                    tile_bounds_in_chunk.1 + (y * chunk_size),
+                    tile_bounds_in_chunk.2 + (x * chunk_size),
+                    tile_bounds_in_chunk.3 + (y * chunk_size),
+                );
+
+                if debug {
+                    println!(
+                        "Tile ID: {:?}, Bounds in chunk: {:?}, Bounds in image: {:?}",
+                        tile_id, tile_bounds_in_chunk, tile_bounds_in_image
+                    );
+                }
+                let tile = Tile {
+                    tile_id,
+                    size: tile_size,
+                    chunk_bounds: tile_bounds_in_chunk,
+                };
+
+                if tile_bounds_in_image.0 > image_metadata_width
+                    || tile_bounds_in_image.1 > image_metadata_height
+                {
+                    if debug {
+                        println!("Tile out of bounds");
+                    }
+                    break;
+                } else {
+                    if debug {
+                        println!("Full tile");
+                    }
+                    generate_full_tile(&chunk, tile, final_tile_size).save(&output, &format);
+                    tiles_processed += 1;
+                }
+            }
+        }
+    }
+    return tiles_processed;
 }

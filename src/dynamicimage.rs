@@ -19,9 +19,7 @@ pub fn load_dynamic_image(args: &Cli) -> Result<ChunkableImageSource, String> {
 
     match source {
         Ok(source) => Ok(ChunkableImageSource::DynamicImage(source)),
-        Err(e) => {
-            Err(format!("Error: {}", e))
-        }
+        Err(e) => Err(format!("Error: {}", e)),
     }
 }
 

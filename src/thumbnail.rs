@@ -2,7 +2,7 @@ use crate::cli::Cli;
 use image::{DynamicImage, GenericImageView};
 use std::path::Path;
 
-pub fn thumbnailfromtiles(args: Cli) {
+pub fn thumbnailfromtiles(args: &Cli, dimension: Option<(u32, u32)>) {
     let min_tile_path_res = tile_path(
         &args.output,
         0,
@@ -19,15 +19,38 @@ pub fn thumbnailfromtiles(args: Cli) {
     let min_tile = image::open(&min_tile_path).unwrap();
     let min_size = real_min_size(&min_tile);
 
+    let mut min_available_zoom = 12;
+    let mut max_available_zoom = 0;
+    for i in 0..12 {
+        if tile_path(
+            &args.output,
+            0,
+            0,
+            i,
+            &args.format,
+            args.thumbnailfromzoomifytiles,
+        )
+        .is_ok()
+        {
+            if i < min_available_zoom {
+                min_available_zoom = i;
+            }
+            if i > max_available_zoom {
+                max_available_zoom = i;
+            }
+        }
+    }
+
     let canary_tile_path = tile_path(
         &args.output,
         0,
         0,
-        4,
+        max_available_zoom,
         &args.format,
         args.thumbnailfromzoomifytiles,
     )
     .unwrap();
+
     let canary_tile = image::open(&canary_tile_path).unwrap();
     let tile_size = canary_tile.width();
 
@@ -35,17 +58,50 @@ pub fn thumbnailfromtiles(args: Cli) {
     let scale_y = min_size.1 as f32 / tile_size as f32;
     let tiles_needed = (args.thumbnailsize as f32 / tile_size as f32).ceil() as u32;
 
-    let zoom = (tiles_needed as f32).ln().ceil() as u32 + 1;
+    let mut known_final_size = false;
+    let mut final_size = [0, 0];
+    let mut zoom = (tiles_needed as f32).ln().ceil() as u32 + 1;
+
+    if let Some((width, height)) = dimension {
+        let width_ratio = width as f32 / (u32::pow(2, max_available_zoom) * tile_size) as f32;
+        let height_ratio = height as f32 / (u32::pow(2, max_available_zoom) * tile_size) as f32;
+        for i in min_available_zoom..max_available_zoom {
+            if args.thumbnailsize
+                < (width_ratio * u32::pow(i, 2) as f32 * tile_size as f32).ceil() as u32
+                && args.thumbnailsize
+                    < (height_ratio * u32::pow(i, 2) as f32 * tile_size as f32).ceil() as u32
+            {
+                zoom = i;
+                break;
+            }
+        }
+
+        known_final_size = true;
+        final_size[0] = (width_ratio * u32::pow(2, zoom) as f32 * tile_size as f32).floor() as u32;
+        final_size[1] = (height_ratio * u32::pow(2, zoom) as f32 * tile_size as f32).floor() as u32;
+    }
+
+    if zoom > max_available_zoom {
+        zoom = max_available_zoom;
+    }
+    if zoom < min_available_zoom {
+        zoom = min_available_zoom;
+    }
+
+    if args.verbose {
+        println!(
+            "Thumbnail size: {},{} - from zoom {}",
+            final_size[0], final_size[1], zoom
+        );
+    }
 
     let mut buffer = DynamicImage::new_rgba8(
-        ((zoom.pow(2) * tile_size) as f32 * scale_x).floor() as u32,
-        ((zoom.pow(2) * tile_size) as f32 * scale_y).floor() as u32,
+        ((u32::pow(2, zoom) * tile_size) as f32 * scale_x).floor() as u32,
+        ((u32::pow(2, zoom) * tile_size) as f32 * scale_y).floor() as u32,
     );
 
-    let mut final_size = [0, 0];
-
-    for x in 0..zoom.pow(2) {
-        for y in 0..zoom.pow(2) {
+    for x in 0..u32::pow(2, zoom) {
+        for y in 0..u32::pow(2, zoom) {
             let tile_path_res = tile_path(
                 &args.output,
                 x,
@@ -63,14 +119,15 @@ pub fn thumbnailfromtiles(args: Cli) {
             let y_offset = y * tile_size;
             image::imageops::overlay(&mut buffer, &tile, x_offset as i64, y_offset as i64);
 
-            if x == 0 {
+            if x == 0 && !known_final_size {
                 final_size[1] += tile.height();
             }
-            if y == 0 {
+            if y == 0 && !known_final_size {
                 final_size[0] += tile.width();
             }
         }
     }
+
     buffer = buffer.crop_imm(0, 0, final_size[0], final_size[1]);
     let rgb = buffer.to_rgb8();
     rgb.save_with_format(
