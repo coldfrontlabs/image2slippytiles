@@ -1,6 +1,6 @@
 [package]
 name = "image2slippytiles"
-version = "1.1.0"
+version = "1.2.0"
 edition = "2024"
 license-file = "LICENSE-LGPL"
 description = "This program generates image tiles in the slippytile format (compatible with leaflet.js) from giant images and slide scan images such as SVS and DCM."
