@@ -466,10 +466,10 @@ cb4b6c2467c26424161cf3a9ff994a71  ./tests/tmp/iss073e0546366~orig.jpg/4/6/2.jpg
 md5sum: ./tests/tmp/iss073e0546366~orig.jpg/4/8: Is a directory
 3dffcc43f6487a502359ca73ed98c607  ./tests/tmp/iss073e0546366~orig.jpg/4/8/0.jpg
 2ae4c4d1c74c54600b6771ab4a98e284  ./tests/tmp/iss073e0546366~orig.jpg/4/8/1.jpg
-4e70ec5981a431df998b5ee53ee28722  ./tests/tmp/iss073e0546366~orig.jpg/4/8/4.jpg
 f147d98904d3d8afecfe87ec2ac96ae0  ./tests/tmp/iss073e0546366~orig.jpg/4/8/2.jpg
-75c913c07173ba749db6df8b8172310a  ./tests/tmp/iss073e0546366~orig.jpg/4/8/5.jpg
+4e70ec5981a431df998b5ee53ee28722  ./tests/tmp/iss073e0546366~orig.jpg/4/8/4.jpg
 1dba41947dda968be11f2c9c1bd17f57  ./tests/tmp/iss073e0546366~orig.jpg/4/8/3.jpg
+75c913c07173ba749db6df8b8172310a  ./tests/tmp/iss073e0546366~orig.jpg/4/8/5.jpg
 md5sum: ./tests/tmp/iss073e0546366~orig.jpg/4/7: Is a directory
 c05b3ed4ed583669c5ca4e835a23145c  ./tests/tmp/iss073e0546366~orig.jpg/4/7/4.jpg
 3994081ca6ad567781b7c1a05246555f  ./tests/tmp/iss073e0546366~orig.jpg/4/7/5.jpg
@@ -587,12 +587,12 @@ b960c2f4009388d86e8c5ddbb49384ff  ./tests/tmp/iss073e0546366~orig.jpg/5/8/5.jpg
 ce439713a7a1938d12a3e74d91caa820  ./tests/tmp/iss073e0546366~orig.jpg/5/8/6.jpg
 a20cb53132bda2f5b6115aecafbf1376  ./tests/tmp/iss073e0546366~orig.jpg/5/8/7.jpg
 md5sum: ./tests/tmp/iss073e0546366~orig.jpg/5/16: Is a directory
-7580c77bf945f371c2671850ef665b8b  ./tests/tmp/iss073e0546366~orig.jpg/5/16/8.jpg
 3f94f6b13f5cdbc14be7f3613851f289  ./tests/tmp/iss073e0546366~orig.jpg/5/16/0.jpg
-16d25ed5caf0e4d32c388bcf336a9016  ./tests/tmp/iss073e0546366~orig.jpg/5/16/9.jpg
+7580c77bf945f371c2671850ef665b8b  ./tests/tmp/iss073e0546366~orig.jpg/5/16/8.jpg
 4e5eca8ebdf8d17a518d2c28806a1f7b  ./tests/tmp/iss073e0546366~orig.jpg/5/16/1.jpg
-ae9f72c6bbaabd096d3ce6cbf8b9524e  ./tests/tmp/iss073e0546366~orig.jpg/5/16/10.jpg
+16d25ed5caf0e4d32c388bcf336a9016  ./tests/tmp/iss073e0546366~orig.jpg/5/16/9.jpg
 bafac3bca3562aa46090962b073bcae9  ./tests/tmp/iss073e0546366~orig.jpg/5/16/2.jpg
+ae9f72c6bbaabd096d3ce6cbf8b9524e  ./tests/tmp/iss073e0546366~orig.jpg/5/16/10.jpg
 fe29d043974a542dff467592474d6faf  ./tests/tmp/iss073e0546366~orig.jpg/5/16/3.jpg
 a5a682c98a449198aad7dab5578f93ff  ./tests/tmp/iss073e0546366~orig.jpg/5/16/4.jpg
 3a5e8885655d850ec33c0baf8b94007f  ./tests/tmp/iss073e0546366~orig.jpg/5/16/5.jpg
@@ -752,29 +752,6 @@ d5f2c8377af86b2dd2e7d919d15f1285  ./tests/tmp/iss073e0546366~orig.jpg/6/2/10.jpg
 fab0fab5e150ad5d45851f1a6b36a8f6  ./tests/tmp/iss073e0546366~orig.jpg/6/2/13.jpg
 fbee51d84a6ab15c60ad26f709bdafb1  ./tests/tmp/iss073e0546366~orig.jpg/6/2/14.jpg
 42a8db37fdb1083eaf0e1957a74aa1fd  ./tests/tmp/iss073e0546366~orig.jpg/6/2/15.jpg
-md5sum: ./tests/tmp/iss073e0546366~orig.jpg/6/3: Is a directory
-bc0e1d3bf4f9bdc4c21f4202bf5619a8  ./tests/tmp/iss073e0546366~orig.jpg/6/3/16.jpg
-6596a8613f52a3f8cb4fc23afc5c7edd  ./tests/tmp/iss073e0546366~orig.jpg/6/3/17.jpg
-ed1e34e7841e9791b7137a76c5a8be54  ./tests/tmp/iss073e0546366~orig.jpg/6/3/18.jpg
-fda2bb816e58f3e023fe6fed991c88c0  ./tests/tmp/iss073e0546366~orig.jpg/6/3/19.jpg
-c6c7e1802751cf638ea646de7d5c076d  ./tests/tmp/iss073e0546366~orig.jpg/6/3/20.jpg
-ac3deec77acde4b3ab461a8806974cac  ./tests/tmp/iss073e0546366~orig.jpg/6/3/21.jpg
-5360bd897166d49ddb88e62e18ca5fb0  ./tests/tmp/iss073e0546366~orig.jpg/6/3/0.jpg
-caf5f73f4c99a59b069ea146f1e661ef  ./tests/tmp/iss073e0546366~orig.jpg/6/3/1.jpg
-c7eb5d69c07085d52ec854e5bb5becd8  ./tests/tmp/iss073e0546366~orig.jpg/6/3/2.jpg
-392cc8b9bd2715d0a47f6458b10d933b  ./tests/tmp/iss073e0546366~orig.jpg/6/3/3.jpg
-5692d702bc30137d0ee1e2571c460b5a  ./tests/tmp/iss073e0546366~orig.jpg/6/3/4.jpg
-b0f2834793a7509c4e9aec250a62042d  ./tests/tmp/iss073e0546366~orig.jpg/6/3/5.jpg
-b06222947efbfc16b0ceb72875631eaf  ./tests/tmp/iss073e0546366~orig.jpg/6/3/6.jpg
-c94fb13526c9f822ced365b9003c00a5  ./tests/tmp/iss073e0546366~orig.jpg/6/3/7.jpg
-0a703fd1857ada9327a6eb144707a61c  ./tests/tmp/iss073e0546366~orig.jpg/6/3/8.jpg
-fa54f0f22eaa5db01f6dbd3ef5d89e08  ./tests/tmp/iss073e0546366~orig.jpg/6/3/9.jpg
-ca6a466fc05a433011a30781247534e8  ./tests/tmp/iss073e0546366~orig.jpg/6/3/10.jpg
-e02dbece51cd5076378821285a505165  ./tests/tmp/iss073e0546366~orig.jpg/6/3/11.jpg
-d1224728a94487d01d46c1b54765442e  ./tests/tmp/iss073e0546366~orig.jpg/6/3/12.jpg
-f129dc60b4d7de3a5a7f0b3316b0afc0  ./tests/tmp/iss073e0546366~orig.jpg/6/3/13.jpg
-6e99a5bc05e303f9e743fa851c4996d6  ./tests/tmp/iss073e0546366~orig.jpg/6/3/14.jpg
-f7c4de1342e0ce9158694cbf04ff720b  ./tests/tmp/iss073e0546366~orig.jpg/6/3/15.jpg
 md5sum: ./tests/tmp/iss073e0546366~orig.jpg/6/32: Is a directory
 f2b6ee7c68b218f482cbcfc414eba947  ./tests/tmp/iss073e0546366~orig.jpg/6/32/16.jpg
 53d7b8fb266141636a88c8e515c096b7  ./tests/tmp/iss073e0546366~orig.jpg/6/32/17.jpg
@@ -798,6 +775,29 @@ d9b21b239c9059f03f8b33a75b892dd0  ./tests/tmp/iss073e0546366~orig.jpg/6/32/12.jp
 2836d139195ecec704dd24c9b6541ed2  ./tests/tmp/iss073e0546366~orig.jpg/6/32/13.jpg
 18c93276285ebfebd57b7e4ab8289987  ./tests/tmp/iss073e0546366~orig.jpg/6/32/14.jpg
 bd88214611058996b23922147ee45d48  ./tests/tmp/iss073e0546366~orig.jpg/6/32/15.jpg
+md5sum: ./tests/tmp/iss073e0546366~orig.jpg/6/3: Is a directory
+bc0e1d3bf4f9bdc4c21f4202bf5619a8  ./tests/tmp/iss073e0546366~orig.jpg/6/3/16.jpg
+6596a8613f52a3f8cb4fc23afc5c7edd  ./tests/tmp/iss073e0546366~orig.jpg/6/3/17.jpg
+ed1e34e7841e9791b7137a76c5a8be54  ./tests/tmp/iss073e0546366~orig.jpg/6/3/18.jpg
+fda2bb816e58f3e023fe6fed991c88c0  ./tests/tmp/iss073e0546366~orig.jpg/6/3/19.jpg
+c6c7e1802751cf638ea646de7d5c076d  ./tests/tmp/iss073e0546366~orig.jpg/6/3/20.jpg
+ac3deec77acde4b3ab461a8806974cac  ./tests/tmp/iss073e0546366~orig.jpg/6/3/21.jpg
+5360bd897166d49ddb88e62e18ca5fb0  ./tests/tmp/iss073e0546366~orig.jpg/6/3/0.jpg
+caf5f73f4c99a59b069ea146f1e661ef  ./tests/tmp/iss073e0546366~orig.jpg/6/3/1.jpg
+c7eb5d69c07085d52ec854e5bb5becd8  ./tests/tmp/iss073e0546366~orig.jpg/6/3/2.jpg
+392cc8b9bd2715d0a47f6458b10d933b  ./tests/tmp/iss073e0546366~orig.jpg/6/3/3.jpg
+5692d702bc30137d0ee1e2571c460b5a  ./tests/tmp/iss073e0546366~orig.jpg/6/3/4.jpg
+b0f2834793a7509c4e9aec250a62042d  ./tests/tmp/iss073e0546366~orig.jpg/6/3/5.jpg
+b06222947efbfc16b0ceb72875631eaf  ./tests/tmp/iss073e0546366~orig.jpg/6/3/6.jpg
+c94fb13526c9f822ced365b9003c00a5  ./tests/tmp/iss073e0546366~orig.jpg/6/3/7.jpg
+0a703fd1857ada9327a6eb144707a61c  ./tests/tmp/iss073e0546366~orig.jpg/6/3/8.jpg
+fa54f0f22eaa5db01f6dbd3ef5d89e08  ./tests/tmp/iss073e0546366~orig.jpg/6/3/9.jpg
+ca6a466fc05a433011a30781247534e8  ./tests/tmp/iss073e0546366~orig.jpg/6/3/10.jpg
+e02dbece51cd5076378821285a505165  ./tests/tmp/iss073e0546366~orig.jpg/6/3/11.jpg
+d1224728a94487d01d46c1b54765442e  ./tests/tmp/iss073e0546366~orig.jpg/6/3/12.jpg
+f129dc60b4d7de3a5a7f0b3316b0afc0  ./tests/tmp/iss073e0546366~orig.jpg/6/3/13.jpg
+6e99a5bc05e303f9e743fa851c4996d6  ./tests/tmp/iss073e0546366~orig.jpg/6/3/14.jpg
+f7c4de1342e0ce9158694cbf04ff720b  ./tests/tmp/iss073e0546366~orig.jpg/6/3/15.jpg
 md5sum: ./tests/tmp/iss073e0546366~orig.jpg/6/4: Is a directory
 0747ebba060a6fc518f00796055cc988  ./tests/tmp/iss073e0546366~orig.jpg/6/4/16.jpg
 9e54f3d689810e86f5bb0f1be65ddd37  ./tests/tmp/iss073e0546366~orig.jpg/6/4/17.jpg
@@ -936,29 +936,6 @@ d2be240f6fae0b823ec5242de64d62ed  ./tests/tmp/iss073e0546366~orig.jpg/6/9/12.jpg
 1de43844304edff5aae5d199ffb49df1  ./tests/tmp/iss073e0546366~orig.jpg/6/9/13.jpg
 aa9a4eb4c4d2f93b15ab4b4a1c1a3f62  ./tests/tmp/iss073e0546366~orig.jpg/6/9/14.jpg
 6ae202ea241762c8706416eab40d3107  ./tests/tmp/iss073e0546366~orig.jpg/6/9/15.jpg
-md5sum: ./tests/tmp/iss073e0546366~orig.jpg/6/10: Is a directory
-4dc82b308e23aa62bf5c056d3702a635  ./tests/tmp/iss073e0546366~orig.jpg/6/10/16.jpg
-e2ed7fd84c8b30313fe05d4e99a8593d  ./tests/tmp/iss073e0546366~orig.jpg/6/10/17.jpg
-0a17eb313d45ede19eb0307301777556  ./tests/tmp/iss073e0546366~orig.jpg/6/10/18.jpg
-c69f69cedd94ee4b6eff4383866ea126  ./tests/tmp/iss073e0546366~orig.jpg/6/10/19.jpg
-7543ade5645c52fe07db5933e8296a00  ./tests/tmp/iss073e0546366~orig.jpg/6/10/20.jpg
-9b15a9f63e1c54189f45cb2411298f65  ./tests/tmp/iss073e0546366~orig.jpg/6/10/21.jpg
-478bfa288d5c9b21006d9563b291a945  ./tests/tmp/iss073e0546366~orig.jpg/6/10/0.jpg
-b1fffeaceda604d8ab5f73091daaae47  ./tests/tmp/iss073e0546366~orig.jpg/6/10/1.jpg
-000ed2a6a8403f74b0e019a6801e5b74  ./tests/tmp/iss073e0546366~orig.jpg/6/10/2.jpg
-6752e3d299a9208379024f17cfa5754c  ./tests/tmp/iss073e0546366~orig.jpg/6/10/3.jpg
-c8a71a78e054dbbc31172bd35b08086e  ./tests/tmp/iss073e0546366~orig.jpg/6/10/4.jpg
-0af53d6d0fb68a68db1d56f59ea256f8  ./tests/tmp/iss073e0546366~orig.jpg/6/10/5.jpg
-df423b48df0001757ffea42d8505229f  ./tests/tmp/iss073e0546366~orig.jpg/6/10/6.jpg
-796e28d98d2250b65eac16ba20709c0d  ./tests/tmp/iss073e0546366~orig.jpg/6/10/7.jpg
-fa329871e43d2853df1d3da8c685547e  ./tests/tmp/iss073e0546366~orig.jpg/6/10/8.jpg
-7fc14fa100386a8dd801767236271392  ./tests/tmp/iss073e0546366~orig.jpg/6/10/9.jpg
-ba8f9d697c2710bbe8ceb8d030aa416d  ./tests/tmp/iss073e0546366~orig.jpg/6/10/10.jpg
-1aec09979e2c3f3e3f83fe95cc6ac077  ./tests/tmp/iss073e0546366~orig.jpg/6/10/11.jpg
-82547d42ebcedba979d28abdf68972d1  ./tests/tmp/iss073e0546366~orig.jpg/6/10/12.jpg
-55403eb0fb5c7f3eb7dfa8dc884a3b82  ./tests/tmp/iss073e0546366~orig.jpg/6/10/13.jpg
-9ebc9d31bbda920517123eea91fdf616  ./tests/tmp/iss073e0546366~orig.jpg/6/10/14.jpg
-03d43d185558e48142838e928227db99  ./tests/tmp/iss073e0546366~orig.jpg/6/10/15.jpg
 md5sum: ./tests/tmp/iss073e0546366~orig.jpg/6/16: Is a directory
 96b43be72e7eaa652360ab6b241689de  ./tests/tmp/iss073e0546366~orig.jpg/6/16/16.jpg
 16b2cc475423ed72a3ce2540878a723a  ./tests/tmp/iss073e0546366~orig.jpg/6/16/17.jpg
@@ -982,29 +959,29 @@ d657934a30039a67e37ea2ddd720a6d9  ./tests/tmp/iss073e0546366~orig.jpg/6/16/12.jp
 4625bd2dc0438bba2bee95a085708b4e  ./tests/tmp/iss073e0546366~orig.jpg/6/16/13.jpg
 3a6006e7d2e56842e2697170d2df024d  ./tests/tmp/iss073e0546366~orig.jpg/6/16/14.jpg
 7bee34e594250726f3cd70ff37a9f6fd  ./tests/tmp/iss073e0546366~orig.jpg/6/16/15.jpg
-md5sum: ./tests/tmp/iss073e0546366~orig.jpg/6/11: Is a directory
-4daf16cfd9ff84b12ab8e7c04d504721  ./tests/tmp/iss073e0546366~orig.jpg/6/11/16.jpg
-279af831b9d1bc5ef730e7c3da982aec  ./tests/tmp/iss073e0546366~orig.jpg/6/11/17.jpg
-cf7c27a70754f9532454dc9a31e98aaa  ./tests/tmp/iss073e0546366~orig.jpg/6/11/18.jpg
-a8f5b22c1f26020531f43ab4ec2740b9  ./tests/tmp/iss073e0546366~orig.jpg/6/11/19.jpg
-c6a0ade079a013063de13de718de7ec8  ./tests/tmp/iss073e0546366~orig.jpg/6/11/20.jpg
-8cb35fd41317ab47f4c61c0be2ec6e40  ./tests/tmp/iss073e0546366~orig.jpg/6/11/21.jpg
-fad12e1fd18ccb7f26948d78cc988ebf  ./tests/tmp/iss073e0546366~orig.jpg/6/11/0.jpg
-0cc38736f7ee4f4a68d16ebcf2746bb6  ./tests/tmp/iss073e0546366~orig.jpg/6/11/1.jpg
-f0a1ffc8aa21a09544d8988ee3a32570  ./tests/tmp/iss073e0546366~orig.jpg/6/11/2.jpg
-0e411262a8a45484f2c66723f84df736  ./tests/tmp/iss073e0546366~orig.jpg/6/11/3.jpg
-1bcecc626a0e76d58004feaab85af5b1  ./tests/tmp/iss073e0546366~orig.jpg/6/11/4.jpg
-a8871566542f90c8d093b9b570583881  ./tests/tmp/iss073e0546366~orig.jpg/6/11/5.jpg
-229c32ed153b6a42475ff5fb1f067636  ./tests/tmp/iss073e0546366~orig.jpg/6/11/6.jpg
-b66fe539c165b741c9ffb59bc3d8ff9e  ./tests/tmp/iss073e0546366~orig.jpg/6/11/7.jpg
-467dd025aeed999877ec2daf007f6e1c  ./tests/tmp/iss073e0546366~orig.jpg/6/11/8.jpg
-f2413ee84897625ef91e68e29a6c084a  ./tests/tmp/iss073e0546366~orig.jpg/6/11/9.jpg
-12f3ebebc4d086b23bb9e813c4f2a6b9  ./tests/tmp/iss073e0546366~orig.jpg/6/11/10.jpg
-f77a4d4b527e3faa7ba5dc17c31446b5  ./tests/tmp/iss073e0546366~orig.jpg/6/11/11.jpg
-b93105c4a07594d8f80b82a07b7d16e7  ./tests/tmp/iss073e0546366~orig.jpg/6/11/12.jpg
-b46d615bb8112ffa2abef4b45fc99338  ./tests/tmp/iss073e0546366~orig.jpg/6/11/13.jpg
-e92957d53cbb0780a0f302887009b257  ./tests/tmp/iss073e0546366~orig.jpg/6/11/14.jpg
-d6785dfe991ce4e1af872cc3cb269aff  ./tests/tmp/iss073e0546366~orig.jpg/6/11/15.jpg
+md5sum: ./tests/tmp/iss073e0546366~orig.jpg/6/10: Is a directory
+4dc82b308e23aa62bf5c056d3702a635  ./tests/tmp/iss073e0546366~orig.jpg/6/10/16.jpg
+e2ed7fd84c8b30313fe05d4e99a8593d  ./tests/tmp/iss073e0546366~orig.jpg/6/10/17.jpg
+0a17eb313d45ede19eb0307301777556  ./tests/tmp/iss073e0546366~orig.jpg/6/10/18.jpg
+c69f69cedd94ee4b6eff4383866ea126  ./tests/tmp/iss073e0546366~orig.jpg/6/10/19.jpg
+7543ade5645c52fe07db5933e8296a00  ./tests/tmp/iss073e0546366~orig.jpg/6/10/20.jpg
+9b15a9f63e1c54189f45cb2411298f65  ./tests/tmp/iss073e0546366~orig.jpg/6/10/21.jpg
+478bfa288d5c9b21006d9563b291a945  ./tests/tmp/iss073e0546366~orig.jpg/6/10/0.jpg
+b1fffeaceda604d8ab5f73091daaae47  ./tests/tmp/iss073e0546366~orig.jpg/6/10/1.jpg
+000ed2a6a8403f74b0e019a6801e5b74  ./tests/tmp/iss073e0546366~orig.jpg/6/10/2.jpg
+6752e3d299a9208379024f17cfa5754c  ./tests/tmp/iss073e0546366~orig.jpg/6/10/3.jpg
+c8a71a78e054dbbc31172bd35b08086e  ./tests/tmp/iss073e0546366~orig.jpg/6/10/4.jpg
+0af53d6d0fb68a68db1d56f59ea256f8  ./tests/tmp/iss073e0546366~orig.jpg/6/10/5.jpg
+df423b48df0001757ffea42d8505229f  ./tests/tmp/iss073e0546366~orig.jpg/6/10/6.jpg
+796e28d98d2250b65eac16ba20709c0d  ./tests/tmp/iss073e0546366~orig.jpg/6/10/7.jpg
+fa329871e43d2853df1d3da8c685547e  ./tests/tmp/iss073e0546366~orig.jpg/6/10/8.jpg
+7fc14fa100386a8dd801767236271392  ./tests/tmp/iss073e0546366~orig.jpg/6/10/9.jpg
+ba8f9d697c2710bbe8ceb8d030aa416d  ./tests/tmp/iss073e0546366~orig.jpg/6/10/10.jpg
+1aec09979e2c3f3e3f83fe95cc6ac077  ./tests/tmp/iss073e0546366~orig.jpg/6/10/11.jpg
+82547d42ebcedba979d28abdf68972d1  ./tests/tmp/iss073e0546366~orig.jpg/6/10/12.jpg
+55403eb0fb5c7f3eb7dfa8dc884a3b82  ./tests/tmp/iss073e0546366~orig.jpg/6/10/13.jpg
+9ebc9d31bbda920517123eea91fdf616  ./tests/tmp/iss073e0546366~orig.jpg/6/10/14.jpg
+03d43d185558e48142838e928227db99  ./tests/tmp/iss073e0546366~orig.jpg/6/10/15.jpg
 md5sum: ./tests/tmp/iss073e0546366~orig.jpg/6/17: Is a directory
 c6a722c2538ec6f4adb6836af6bb3d47  ./tests/tmp/iss073e0546366~orig.jpg/6/17/16.jpg
 ebe1dbe667cee79a6cbeee94a813dc1a  ./tests/tmp/iss073e0546366~orig.jpg/6/17/17.jpg
@@ -1028,29 +1005,29 @@ e8af2d6f5a676ed014779cb86758a01b  ./tests/tmp/iss073e0546366~orig.jpg/6/17/12.jp
 c8296453700eb3813c6a3d05e1d63a47  ./tests/tmp/iss073e0546366~orig.jpg/6/17/13.jpg
 7c896d27cd31c43e6ea0a33935ec1ecc  ./tests/tmp/iss073e0546366~orig.jpg/6/17/14.jpg
 fdfaf432e373c515bae8da207909f6ca  ./tests/tmp/iss073e0546366~orig.jpg/6/17/15.jpg
-md5sum: ./tests/tmp/iss073e0546366~orig.jpg/6/12: Is a directory
-c20adf9921fa693db1d193d8d8efd8a7  ./tests/tmp/iss073e0546366~orig.jpg/6/12/16.jpg
-250785d394b235c1e1c9483fded80388  ./tests/tmp/iss073e0546366~orig.jpg/6/12/17.jpg
-d9b3bf1b7e30c45cd9e0e94d8d495adf  ./tests/tmp/iss073e0546366~orig.jpg/6/12/18.jpg
-427ff12481077f7ad5f31990e093fcc0  ./tests/tmp/iss073e0546366~orig.jpg/6/12/19.jpg
-4873156e4f7d5f165605a544c06b8613  ./tests/tmp/iss073e0546366~orig.jpg/6/12/20.jpg
-9e9a5267213746fd39bae52a3201365a  ./tests/tmp/iss073e0546366~orig.jpg/6/12/21.jpg
-29fbf72e7b0c47298cbfcf1ca04cb4d0  ./tests/tmp/iss073e0546366~orig.jpg/6/12/0.jpg
-fbfdb8b4903e9f3c51376fbc1183c996  ./tests/tmp/iss073e0546366~orig.jpg/6/12/1.jpg
-e6d62899532a594935f1804da6f9f335  ./tests/tmp/iss073e0546366~orig.jpg/6/12/2.jpg
-39556980cdbb63199fbf4e0c4757bc06  ./tests/tmp/iss073e0546366~orig.jpg/6/12/3.jpg
-13340459bcbb98241e3e76a9d624f21a  ./tests/tmp/iss073e0546366~orig.jpg/6/12/4.jpg
-e0e95df067656d3accba6053a8a84d40  ./tests/tmp/iss073e0546366~orig.jpg/6/12/5.jpg
-9e6470868fed98ec1961df619a03264c  ./tests/tmp/iss073e0546366~orig.jpg/6/12/6.jpg
-e1a0d2e308df6caf16f4470311b13f7d  ./tests/tmp/iss073e0546366~orig.jpg/6/12/7.jpg
-91974fdfec2dc88c4be0686e7946f32e  ./tests/tmp/iss073e0546366~orig.jpg/6/12/8.jpg
-d13c039001869e39ee8f4b008238711c  ./tests/tmp/iss073e0546366~orig.jpg/6/12/9.jpg
-0760c413bebf7d8f58b69c676fff157b  ./tests/tmp/iss073e0546366~orig.jpg/6/12/10.jpg
-8df35eada2d61fdb6c1e0d5966cbba22  ./tests/tmp/iss073e0546366~orig.jpg/6/12/11.jpg
-08332e47b9f19458a439d393faa17ba3  ./tests/tmp/iss073e0546366~orig.jpg/6/12/12.jpg
-93b45bace600fcf2dde8c5c3cfe46385  ./tests/tmp/iss073e0546366~orig.jpg/6/12/13.jpg
-b48a648ab0df870ffe687db2337b4729  ./tests/tmp/iss073e0546366~orig.jpg/6/12/14.jpg
-b19009df2a3e99001525985c37265b7a  ./tests/tmp/iss073e0546366~orig.jpg/6/12/15.jpg
+md5sum: ./tests/tmp/iss073e0546366~orig.jpg/6/11: Is a directory
+4daf16cfd9ff84b12ab8e7c04d504721  ./tests/tmp/iss073e0546366~orig.jpg/6/11/16.jpg
+279af831b9d1bc5ef730e7c3da982aec  ./tests/tmp/iss073e0546366~orig.jpg/6/11/17.jpg
+cf7c27a70754f9532454dc9a31e98aaa  ./tests/tmp/iss073e0546366~orig.jpg/6/11/18.jpg
+a8f5b22c1f26020531f43ab4ec2740b9  ./tests/tmp/iss073e0546366~orig.jpg/6/11/19.jpg
+c6a0ade079a013063de13de718de7ec8  ./tests/tmp/iss073e0546366~orig.jpg/6/11/20.jpg
+8cb35fd41317ab47f4c61c0be2ec6e40  ./tests/tmp/iss073e0546366~orig.jpg/6/11/21.jpg
+fad12e1fd18ccb7f26948d78cc988ebf  ./tests/tmp/iss073e0546366~orig.jpg/6/11/0.jpg
+0cc38736f7ee4f4a68d16ebcf2746bb6  ./tests/tmp/iss073e0546366~orig.jpg/6/11/1.jpg
+f0a1ffc8aa21a09544d8988ee3a32570  ./tests/tmp/iss073e0546366~orig.jpg/6/11/2.jpg
+0e411262a8a45484f2c66723f84df736  ./tests/tmp/iss073e0546366~orig.jpg/6/11/3.jpg
+1bcecc626a0e76d58004feaab85af5b1  ./tests/tmp/iss073e0546366~orig.jpg/6/11/4.jpg
+a8871566542f90c8d093b9b570583881  ./tests/tmp/iss073e0546366~orig.jpg/6/11/5.jpg
+229c32ed153b6a42475ff5fb1f067636  ./tests/tmp/iss073e0546366~orig.jpg/6/11/6.jpg
+b66fe539c165b741c9ffb59bc3d8ff9e  ./tests/tmp/iss073e0546366~orig.jpg/6/11/7.jpg
+467dd025aeed999877ec2daf007f6e1c  ./tests/tmp/iss073e0546366~orig.jpg/6/11/8.jpg
+f2413ee84897625ef91e68e29a6c084a  ./tests/tmp/iss073e0546366~orig.jpg/6/11/9.jpg
+12f3ebebc4d086b23bb9e813c4f2a6b9  ./tests/tmp/iss073e0546366~orig.jpg/6/11/10.jpg
+f77a4d4b527e3faa7ba5dc17c31446b5  ./tests/tmp/iss073e0546366~orig.jpg/6/11/11.jpg
+b93105c4a07594d8f80b82a07b7d16e7  ./tests/tmp/iss073e0546366~orig.jpg/6/11/12.jpg
+b46d615bb8112ffa2abef4b45fc99338  ./tests/tmp/iss073e0546366~orig.jpg/6/11/13.jpg
+e92957d53cbb0780a0f302887009b257  ./tests/tmp/iss073e0546366~orig.jpg/6/11/14.jpg
+d6785dfe991ce4e1af872cc3cb269aff  ./tests/tmp/iss073e0546366~orig.jpg/6/11/15.jpg
 md5sum: ./tests/tmp/iss073e0546366~orig.jpg/6/18: Is a directory
 6ac84f26445dde79a05610675fc6fc68  ./tests/tmp/iss073e0546366~orig.jpg/6/18/16.jpg
 0c131437c7bbcb6f6760ace34bb012f3  ./tests/tmp/iss073e0546366~orig.jpg/6/18/17.jpg
@@ -1074,6 +1051,29 @@ a05325186b1683c4967b3489a8345b76  ./tests/tmp/iss073e0546366~orig.jpg/6/18/9.jpg
 7ef06b3b92153b55c5ea357ab484bb36  ./tests/tmp/iss073e0546366~orig.jpg/6/18/13.jpg
 5b58d2eed523276b9b40aeb383e90dff  ./tests/tmp/iss073e0546366~orig.jpg/6/18/14.jpg
 8f2565ffcccd992b3bbd198c47a9f344  ./tests/tmp/iss073e0546366~orig.jpg/6/18/15.jpg
+md5sum: ./tests/tmp/iss073e0546366~orig.jpg/6/12: Is a directory
+c20adf9921fa693db1d193d8d8efd8a7  ./tests/tmp/iss073e0546366~orig.jpg/6/12/16.jpg
+250785d394b235c1e1c9483fded80388  ./tests/tmp/iss073e0546366~orig.jpg/6/12/17.jpg
+d9b3bf1b7e30c45cd9e0e94d8d495adf  ./tests/tmp/iss073e0546366~orig.jpg/6/12/18.jpg
+427ff12481077f7ad5f31990e093fcc0  ./tests/tmp/iss073e0546366~orig.jpg/6/12/19.jpg
+4873156e4f7d5f165605a544c06b8613  ./tests/tmp/iss073e0546366~orig.jpg/6/12/20.jpg
+9e9a5267213746fd39bae52a3201365a  ./tests/tmp/iss073e0546366~orig.jpg/6/12/21.jpg
+29fbf72e7b0c47298cbfcf1ca04cb4d0  ./tests/tmp/iss073e0546366~orig.jpg/6/12/0.jpg
+fbfdb8b4903e9f3c51376fbc1183c996  ./tests/tmp/iss073e0546366~orig.jpg/6/12/1.jpg
+e6d62899532a594935f1804da6f9f335  ./tests/tmp/iss073e0546366~orig.jpg/6/12/2.jpg
+39556980cdbb63199fbf4e0c4757bc06  ./tests/tmp/iss073e0546366~orig.jpg/6/12/3.jpg
+13340459bcbb98241e3e76a9d624f21a  ./tests/tmp/iss073e0546366~orig.jpg/6/12/4.jpg
+e0e95df067656d3accba6053a8a84d40  ./tests/tmp/iss073e0546366~orig.jpg/6/12/5.jpg
+9e6470868fed98ec1961df619a03264c  ./tests/tmp/iss073e0546366~orig.jpg/6/12/6.jpg
+e1a0d2e308df6caf16f4470311b13f7d  ./tests/tmp/iss073e0546366~orig.jpg/6/12/7.jpg
+91974fdfec2dc88c4be0686e7946f32e  ./tests/tmp/iss073e0546366~orig.jpg/6/12/8.jpg
+d13c039001869e39ee8f4b008238711c  ./tests/tmp/iss073e0546366~orig.jpg/6/12/9.jpg
+0760c413bebf7d8f58b69c676fff157b  ./tests/tmp/iss073e0546366~orig.jpg/6/12/10.jpg
+8df35eada2d61fdb6c1e0d5966cbba22  ./tests/tmp/iss073e0546366~orig.jpg/6/12/11.jpg
+08332e47b9f19458a439d393faa17ba3  ./tests/tmp/iss073e0546366~orig.jpg/6/12/12.jpg
+93b45bace600fcf2dde8c5c3cfe46385  ./tests/tmp/iss073e0546366~orig.jpg/6/12/13.jpg
+b48a648ab0df870ffe687db2337b4729  ./tests/tmp/iss073e0546366~orig.jpg/6/12/14.jpg
+b19009df2a3e99001525985c37265b7a  ./tests/tmp/iss073e0546366~orig.jpg/6/12/15.jpg
 md5sum: ./tests/tmp/iss073e0546366~orig.jpg/6/13: Is a directory
 19f02e8b7dce8c9e3528e2e22c5f6f44  ./tests/tmp/iss073e0546366~orig.jpg/6/13/16.jpg
 b752178ddea8d01346d00daebd44b47a  ./tests/tmp/iss073e0546366~orig.jpg/6/13/17.jpg
@@ -1473,4 +1473,4 @@ fd703c25497d7fed17e508564eafa326  ./tests/tmp/iss073e0546366~small.jpg/2/2/0.jpg
 795976c102729d0813c97a8d07f2ca72  ./tests/tmp/iss073e0546366~small.jpg/2/2/1.jpg
 f457f79cd73afd7795b9be8a90f0610c  ./tests/tmp/iss073e0546366~small.jpg/thumbnail.jpg
 28d2dfcb14505e02cdff418eec098797  ./tests/tmp/iss073e0546366~small.jpg.out
-119b621b61bc08b65f1015d6f68bfeb8  ./tests/tmp/acceptance-test.results
+06fe3be2effacab5c7e26a4537a3a91a  ./tests/tmp/acceptance-test.results

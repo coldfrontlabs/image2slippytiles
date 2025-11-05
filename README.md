@@ -10,7 +10,7 @@ Demo: https://files.coldfrontlabs.ca/tiling-demo/
 
 Input images are processed using OpenSlide or Image depending.
 
-`.svs` and `.dcm` images are processed with OpenSlide, and other files are attempted to be loaded with https://github.com/image-rs/image
+"svs", "tif", "dcm", "vms", "vmu", "ndpi", "scn", "mrxs", "tiff", "svslide", "bif", and "czi" images are processed with OpenSlide, and other files are attempted to be loaded with https://github.com/image-rs/image
 
 Support Image types are list here: https://docs.rs/image/latest/image/codecs/index.html#supported-formats
 
