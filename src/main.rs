@@ -33,13 +33,13 @@ async fn main() {
                     }
                 }
                 Err(message) => {
-                    println!("{}", message);
+                    eprintln!("{}", message);
                     exit(1);
                 }
             }
         }
         Err(message) => {
-            println!("Error loading image: {}", message);
+            eprintln!("Error loading image: {}", message);
             exit(1);
         }
     }

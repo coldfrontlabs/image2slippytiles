@@ -12,7 +12,7 @@ pub fn thumbnailfromtiles(args: &Cli, dimension: Option<(u32, u32)>) {
         args.thumbnailfromzoomifytiles,
     );
     if min_tile_path_res.is_err() {
-        println!("{}", min_tile_path_res.unwrap_err());
+        eprintln!("{}", min_tile_path_res.unwrap_err());
         return;
     }
     let min_tile_path = min_tile_path_res.unwrap();
@@ -89,7 +89,7 @@ pub fn thumbnailfromtiles(args: &Cli, dimension: Option<(u32, u32)>) {
     }
 
     if args.verbose {
-        println!(
+        eprintln!(
             "Thumbnail size: {},{} - from zoom {}",
             final_size[0], final_size[1], zoom
         );

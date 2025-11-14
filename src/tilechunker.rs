@@ -55,9 +55,10 @@ pub async fn tilechunker(
     start_time: Instant,
 ) -> Result<TileMetadata, String> {
     if args.debug {
-        println!("Generating tiles from image ...")
+        eprintln!("Generating tiles from image ...")
     }
 
+    let threads = source.get_threads();
     let image_metadata = source.get_image_metadata();
     let default_hexcolour = HexColor::parse_rgba(args.colour.as_str()).unwrap();
     let default_colour = [
@@ -82,18 +83,18 @@ pub async fn tilechunker(
     }
 
     if args.verbose {
-        println!(
+        eprintln!(
             "Dividing {}x{} images into {}x{} chunks of {}",
             image_metadata.width, image_metadata.height, width_chunks, height_chunks, chunk_size
         );
-        println!(
+        eprintln!(
             "Max zoom is {}, can generate up to zoom level {} from each chunk",
             max_zoom, max_chunk_zoom
         );
     }
 
     if args.debug {
-        println!(
+        eprintln!(
             "Max dimension of source image: {}\nFinal tile size: {}\nChunk Zoom: {}\nScale: {}\nMax zoom: {}\nOutput path: {}\nChunk Size: {}\nWidth Chunks: {}\nHeight Chunks: {}\nMax Chunks zoom:{}",
             max,
             final_tile_size,
@@ -108,88 +109,21 @@ pub async fn tilechunker(
         );
     }
 
-    /*
-    let mut total_tiles = 1;
-    for z in 1..max_zoom+1 {
-        let tile_size = u32::pow(2, max_zoom - z) * final_tile_size;
-        let width_tiles_at_zoom = (width_chunks * chunk_size) / tile_size;
-        let height_tiles_at_zoom = (height_chunks * chunk_size) / tile_size;
-        total_tiles += width_tiles_at_zoom * height_tiles_at_zoom;
-    }
-    print!("Total tiles needed: {}", total_tiles);
-    */
-
     fs::create_dir(&args.output).unwrap_or_default();
-
-    /*
-    let thumbnail_scale = args.thumbnailsize as f32
-        / std::cmp::min(image_metadata.width, image_metadata.height) as f32;
-    let thumbnail_chunk_size = (chunk_size as f32 * thumbnail_scale).ceil() as u32;
-
-
-    let thumbnail_size = [
-        (width_chunks * thumbnail_chunk_size) as u32,
-        (height_chunks * thumbnail_chunk_size) as u32,
-    ];
-    */
-    /*
-        let mut thumbnail: DynamicImage = image::DynamicImage::from(image::ImageBuffer::from_pixel(
-            thumbnail_size[0],
-            thumbnail_size[1],
-            image::Rgba([0_u8, 0_u8, 0_u8, 0_u8]),
-        ));
-
-        let mut thumbnail_actual = [0, 0];
-    */
-    //let mut tiles_processed = 0;
-
     let mut handles = Vec::new();
     for x in 0..width_chunks {
         for y in 0..height_chunks {
             let chunk_id = (x, y);
 
             if args.verbose {
-                println!("Chunk ID: {:?}", chunk_id);
+                eprintln!("Chunk ID: {:?}", chunk_id);
             }
 
             let mut chunk = source.get_chunk(chunk_id, chunk_size, chunk_size);
-            /*
-                        if args.thumbnail {
-                            let thumbnail_chunk: DynamicImage = chunk.resize(
-                                (thumbnail_chunk_size as f32 * (chunk.width() as f32 / chunk_size as f32))
-                                    .ceil() as u32,
-                                (thumbnail_chunk_size as f32 * (chunk.height() as f32 / chunk_size as f32))
-                                    .ceil() as u32,
-                                FilterType::Lanczos3,
-                            );
 
-                            if y == 0 {
-                                thumbnail_actual[0] += thumbnail_chunk.width();
-                            }
-
-                            if x == 0 {
-                                thumbnail_actual[1] += thumbnail_chunk.height();
-                            }
-
-                            thumbnail_chunk.pixels().for_each(|(i, j, pixel)| {
-                                let placement = [
-                                    i as i32 + (x * thumbnail_chunk_size) as i32,
-                                    j as i32 + (y * thumbnail_chunk_size) as i32,
-                                ];
-
-                                if placement[0] > 0
-                                    && placement[0] < thumbnail_size[0] as i32
-                                    && placement[1] > 0
-                                    && placement[1] < thumbnail_size[1] as i32
-                                {
-                                    thumbnail.put_pixel(placement[0] as u32, placement[1] as u32, pixel);
-                                }
-                            });
-                        }
-            */
             if chunk.width() != chunk_size || chunk.height() != chunk_size {
                 if args.debug {
-                    println!("Generate a partial chunk");
+                    eprintln!("Generate a partial chunk");
                 }
                 let mut chunk_with_background =
                     image::DynamicImage::from(image::ImageBuffer::from_pixel(
@@ -204,7 +138,7 @@ pub async fn tilechunker(
             }
 
             if args.debug {
-                println!("Generating tiles from chunk");
+                eprintln!("Generating tiles from chunk");
             }
 
             // process chunk.
@@ -223,18 +157,23 @@ pub async fn tilechunker(
                 args.verbose,
                 args.debug,
             )));
+
+            if handles.len() > threads {
+                join_all(handles.iter_mut()).await;
+                handles = Vec::new();
+            }
             // Process chunk end.
             timeout(args.timeout, start_time)?;
             if args.debug {
-                println!("Done tile generation for chunk.")
+                eprintln!("Done tile generation for chunk.")
             }
         }
     }
     join_all(handles).await;
 
     if args.debug {
-        println!("Done processing all chunks.");
-        println!(
+        eprintln!("Done processing all chunks.");
+        eprintln!(
             "Generating lower zoom tiles from parent tiles - From {} to {}",
             args.zoom, max_chunk_zoom
         );
@@ -253,7 +192,7 @@ pub async fn tilechunker(
                 };
 
                 if args.debug {
-                    println!("Compiling tile {:?}", tile_id);
+                    eprintln!("Compiling tile {:?}", tile_id);
                 }
 
                 timeout(args.timeout, start_time)?;
@@ -272,8 +211,8 @@ pub async fn tilechunker(
     }
 
     if args.debug {
-        println!("Done processing all lower zoom tiles.");
-        println!("Generating thumbnail.")
+        eprintln!("Done processing all lower zoom tiles.");
+        eprintln!("Generating thumbnail.")
     }
 
     if args.thumbnail {
@@ -413,7 +352,7 @@ async fn process_chunk(
         let tile_size = u32::pow(2, max_zoom - z) * final_tile_size;
 
         if verbose {
-            println!(
+            eprintln!(
                 "Zoom level: {}, pre-resize tile size: {}, from chunk size: {}",
                 z, tile_size, chunk_size
             );
@@ -443,7 +382,7 @@ async fn process_chunk(
                 );
 
                 if debug {
-                    println!(
+                    eprintln!(
                         "Tile ID: {:?}, Bounds in chunk: {:?}, Bounds in image: {:?}",
                         tile_id, tile_bounds_in_chunk, tile_bounds_in_image
                     );
@@ -458,12 +397,12 @@ async fn process_chunk(
                     || tile_bounds_in_image.1 > image_metadata_height
                 {
                     if debug {
-                        println!("Tile out of bounds");
+                        eprintln!("Tile out of bounds");
                     }
                     break;
                 } else {
                     if debug {
-                        println!("Full tile");
+                        eprintln!("Full tile");
                     }
                     generate_full_tile(&chunk, tile, final_tile_size).save(&output, &format);
                     tiles_processed += 1;

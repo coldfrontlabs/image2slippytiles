@@ -6,7 +6,9 @@ use image::DynamicImage;
 use openslide_rs::OpenSlide;
 use std::path::Path;
 
-const OPENSLIDE_FORMATS: [&str; 12] = ["svs", "tif", "dcm", "vms", "vmu", "ndpi", "scn", "mrxs", "tiff", "svslide", "bif", "czi"];
+const OPENSLIDE_FORMATS: [&str; 12] = [
+    "svs", "tif", "dcm", "vms", "vmu", "ndpi", "scn", "mrxs", "tiff", "svslide", "bif", "czi",
+];
 
 pub enum ChunkableImageSource {
     DynamicImage(DynamicImage),
@@ -14,6 +16,13 @@ pub enum ChunkableImageSource {
 }
 
 impl ChunkSource for ChunkableImageSource {
+    fn get_threads(&self) -> usize {
+        match self {
+            ChunkableImageSource::DynamicImage(_) => return 1,
+            ChunkableImageSource::Slide(_) => return 4,
+        }
+    }
+
     fn get_chunk(&self, chunk_id: (u32, u32), chunk_width: u32, chunk_height: u32) -> DynamicImage {
         match self {
             ChunkableImageSource::DynamicImage(img) => {
@@ -41,6 +50,7 @@ impl ChunkSource for ChunkableImageSource {
 }
 
 pub trait ChunkSource {
+    fn get_threads(&self) -> usize;
     fn get_chunk(&self, chunk_id: (u32, u32), chunk_width: u32, chunk_height: u32) -> DynamicImage;
     fn get_image_metadata(&self) -> ImageMetadata;
     fn get_slide_metadata(&self) -> Option<SlideMetadata>;

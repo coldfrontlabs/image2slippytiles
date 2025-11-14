@@ -11,7 +11,7 @@ pub fn load_openslide_image(args: &Cli) -> Result<ChunkableImageSource, String> 
     match slide_res {
         Ok(slide) => {
             if args.verbose {
-                println!("Properties: {:#?}", slide.properties().openslide_properties);
+                eprintln!("Properties: {:#?}", slide.properties().openslide_properties);
             }
 
             Ok(ChunkableImageSource::Slide(Box::new(slide)))
@@ -21,6 +21,10 @@ pub fn load_openslide_image(args: &Cli) -> Result<ChunkableImageSource, String> 
 }
 
 impl ChunkSource for OpenSlide {
+    fn get_threads(&self) -> usize {
+        3
+    }
+
     fn get_chunk(&self, chunk_id: (u32, u32), chunk_width: u32, chunk_height: u32) -> DynamicImage {
         let dimensions = self.get_level_dimensions(0).unwrap();
 

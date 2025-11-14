@@ -11,7 +11,7 @@ for source_file in $DIR/tests/source/*; do
     echo "Generating tiles for $filename"
     output_dir="$DIR/tests/tmp/$filename"
     mkdir -p $output_dir
-    ./target/release/image2slippytiles --thumbnail --colour '#DDDDDDFF' --format jpg --zoom 0 --json --output $output_dir "$source_file" | jq 'del(.peak_memory) | del(.duration)' > "./tests/tmp/$filename.out"
+    ./target/release/image2slippytiles --thumbnail --colour '#DDDDDDFF' --format png --zoom 0 --json --output $output_dir "$source_file" | jq 'del(.peak_memory) | del(.duration)' > "./tests/tmp/$filename.out"
 done
 
 echo "Comparing output to expected results";

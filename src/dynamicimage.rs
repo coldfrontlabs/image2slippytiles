@@ -10,7 +10,7 @@ pub fn load_dynamic_image(args: &Cli) -> Result<ChunkableImageSource, String> {
     let mut img = ImageReader::open(path).unwrap();
 
     if args.verbose {
-        println!("format: {:?}", img.format());
+        eprintln!("format: {:?}", img.format());
     }
 
     img.no_limits();
@@ -24,6 +24,10 @@ pub fn load_dynamic_image(args: &Cli) -> Result<ChunkableImageSource, String> {
 }
 
 impl ChunkSource for DynamicImage {
+    fn get_threads(&self) -> usize {
+        1
+    }
+
     fn get_chunk(&self, chunk_id: (u32, u32), chunk_width: u32, chunk_height: u32) -> DynamicImage {
         self.crop_imm(
             chunk_id.0 * chunk_width,

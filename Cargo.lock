@@ -653,7 +653,7 @@ dependencies = [
 
 [[package]]
 name = "image2slippytiles"
-version = "1.2.1"
+version = "1.2.2"
 dependencies = [
  "clap",
  "fast_image_resize",
