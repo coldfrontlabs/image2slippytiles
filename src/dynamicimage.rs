@@ -10,7 +10,7 @@ pub fn load_dynamic_image(args: &Cli) -> Result<ChunkableImageSource, String> {
     let mut img = ImageReader::open(path).unwrap();
 
     if args.verbose {
-        eprintln!("format: {:?}", img.format());
+        eprintln!("Image format: {:?}", img.format());
     }
 
     img.no_limits();

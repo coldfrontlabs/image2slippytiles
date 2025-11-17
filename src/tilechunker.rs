@@ -93,7 +93,7 @@ pub async fn tilechunker(
         );
     }
 
-    if args.debug {
+    if args.verbose {
         eprintln!(
             "Max dimension of source image: {}\nFinal tile size: {}\nChunk Zoom: {}\nScale: {}\nMax zoom: {}\nOutput path: {}\nChunk Size: {}\nWidth Chunks: {}\nHeight Chunks: {}\nMax Chunks zoom:{}",
             max,
@@ -107,6 +107,10 @@ pub async fn tilechunker(
             height_chunks,
             max_chunk_zoom
         );
+        eprintln!(
+            "Generating tiles from chunks - Zoom levels: {} - {}",
+            max_chunk_zoom, max_zoom
+        )
     }
 
     fs::create_dir(&args.output).unwrap_or_default();
@@ -115,7 +119,7 @@ pub async fn tilechunker(
         for y in 0..height_chunks {
             let chunk_id = (x, y);
 
-            if args.verbose {
+            if args.debug {
                 eprintln!("Chunk ID: {:?}", chunk_id);
             }
 
@@ -171,11 +175,12 @@ pub async fn tilechunker(
     }
     join_all(handles).await;
 
-    if args.debug {
+    if args.verbose {
         eprintln!("Done processing all chunks.");
         eprintln!(
-            "Generating lower zoom tiles from parent tiles - From {} to {}",
-            args.zoom, max_chunk_zoom
+            "Generating lower zoom tiles from parent tiles - Zoom levels {} to {}",
+            args.zoom,
+            max_chunk_zoom - 1
         );
     }
 
@@ -210,19 +215,17 @@ pub async fn tilechunker(
         }
     }
 
-    if args.debug {
-        eprintln!("Done processing all lower zoom tiles.");
-        eprintln!("Generating thumbnail.")
+    if args.verbose {
+        eprintln!(
+            "Done processing all lower zoom tiles ({} - {}).",
+            args.zoom, max_chunk_zoom
+        );
     }
 
     if args.thumbnail {
-        /*
-        thumbnail
-            .crop(0, 0, thumbnail_actual[0], thumbnail_actual[1])
-            .to_rgb8()
-            .save_with_format(format!("{}/thumbnail.jpg", path), image::ImageFormat::Jpeg)
-            .unwrap();
-        */
+        if args.verbose {
+            eprintln!("Generating thumbnail from tiles.")
+        }
         thumbnailfromtiles(&args, Some((image_metadata.width, image_metadata.height)));
     }
 
@@ -344,14 +347,14 @@ async fn process_chunk(
     image_metadata_height: u32,
     output: String,
     format: String,
-    verbose: bool,
+    _verbose: bool,
     debug: bool,
 ) -> u32 {
     let mut tiles_processed = 0;
     for z in max_chunk_zoom..max_zoom + 1 {
         let tile_size = u32::pow(2, max_zoom - z) * final_tile_size;
 
-        if verbose {
+        if debug {
             eprintln!(
                 "Zoom level: {}, pre-resize tile size: {}, from chunk size: {}",
                 z, tile_size, chunk_size
