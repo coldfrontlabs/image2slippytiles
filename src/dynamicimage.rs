@@ -2,18 +2,30 @@ use crate::chunkable::*;
 use crate::cli::Cli;
 use crate::metadata::*;
 use image::{DynamicImage, ImageReader};
+use image::ImageFormat;
+use image::Limits;
 use std::path::Path;
+use std::io::BufReader;
+use std::fs::File;
 
-pub fn load_dynamic_image(args: &Cli) -> Result<ChunkableImageSource, String> {
+pub fn load_dynamic_image(args: &Cli, format: Option<ImageFormat>) -> Result<ChunkableImageSource, String> {
     let path = Path::new(&args.filename);
 
-    let mut img = ImageReader::open(path).unwrap();
+    let mut img = match format {
+        Some(image_format) => {
+          let mut i = ImageReader::new(BufReader::new(File::open(path).unwrap()));
+          i.set_format(image_format);
+          i
+        }
+        None => ImageReader::open(path).unwrap()
+    };
 
     if args.verbose {
         eprintln!("Image format: {:?}", img.format());
     }
 
-    img.no_limits();
+    //img.no_limits();
+    img.limits(Limits::no_limits());
 
     let source = img.decode();
 

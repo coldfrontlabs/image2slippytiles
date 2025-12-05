@@ -5,6 +5,7 @@ use crate::openslide::load_openslide_image;
 use image::DynamicImage;
 use openslide_rs::OpenSlide;
 use std::path::Path;
+use image::ImageFormat;
 
 const OPENSLIDE_FORMATS: [&str; 12] = [
     "svs", "tif", "dcm", "vms", "vmu", "ndpi", "scn", "mrxs", "tiff", "svslide", "bif", "czi",
@@ -71,9 +72,16 @@ pub fn load_image(args: &Cli) -> Result<ChunkableImageSource, String> {
     match extension_res {
         Some(extension) => {
             if OPENSLIDE_FORMATS.contains(&extension.to_str().unwrap()) {
-                load_openslide_image(args)
-            } else {
-                load_dynamic_image(args)
+                let res = load_openslide_image(args);
+                if res.is_err() {
+                    load_dynamic_image(args, Some(ImageFormat::Tiff))
+                } else {
+                    res
+                }
+            }
+            
+            else {
+                load_dynamic_image(args, None)
             }
         }
         None => Err(format!("Unknown file type in file: {}", args.filename)),

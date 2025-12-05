@@ -1,5 +1,5 @@
 use clap::Parser;
-use image2slippytiles::{chunkable, cli, thumbnail, tilechunker};
+use image2slippytiles::{chunkable, cli, globals::PEAK_ALLOC, thumbnail, tilechunker};
 use std::process::exit;
 use std::time::Instant;
 use tokio;
@@ -22,7 +22,13 @@ async fn main() {
 
     match source {
         Ok(img) => {
+            if args.test_only {
+                println!("Image \"{}\" can be loaded.", args.filename);
+                exit(0)
+            }
+
             let json = args.json;
+
             let tiles_res = tilechunker::tilechunker(args, 256, 4, img, start_time).await;
             match tiles_res {
                 Ok(tiles) => {
@@ -40,6 +46,7 @@ async fn main() {
         }
         Err(message) => {
             eprintln!("Error loading image: {}", message);
+            eprintln!("Peak memory usage was: {}", PEAK_ALLOC.peak_usage_as_mb());
             exit(1);
         }
     }

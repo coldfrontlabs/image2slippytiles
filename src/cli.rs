@@ -42,6 +42,10 @@ pub struct Cli {
     #[arg(short = 'c', long, default_value = "#00000000")]
     pub colour: String,
 
+    /// Test if image/slide can be loaded.
+    #[arg(long, default_value = "false")]
+    pub test_only: bool,
+
     /// Generate thumbnail.
     #[arg(short = 'T', long)]
     pub thumbnail: bool,
