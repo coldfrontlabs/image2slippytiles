@@ -11,11 +11,11 @@ categories = ["command-line-utilities", "multimedia::images", "science", "scienc
 keywords = ["images", "slippytiles", "tiles", "openslide", "map", "leaflet"]
 
 [dependencies]
-clap = { version = "4.5.49", features = ["derive"] }
-fast_image_resize = "5.3.0"
+clap = { version = "4.5.53", features = ["derive"] }
+fast_image_resize = "5.4.0"
 futures = "0.3.31"
 hex_color = "3.0.0"
-image = "0.25.8"
+image = "0.25.9"
 openslide-rs = "2.4.0"
 openslide-sys = "1.0.8"
 peak_alloc = "0.3.0"

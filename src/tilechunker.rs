@@ -235,7 +235,7 @@ pub async fn tilechunker(
         bounds: [
             0.0,
             0.0,
-            -1.0 * image_metadata.height as f32 / u32::pow(2, max_zoom) as f32,
+            -(image_metadata.height as f32) / u32::pow(2, max_zoom) as f32,
             image_metadata.width as f32 / u32::pow(2, max_zoom) as f32,
         ],
         image_type: args.format,
@@ -361,8 +361,8 @@ async fn process_chunk(
             );
         }
 
-        let width_tiles_at_zoom = chunk_size / tile_size as u32;
-        let height_tiles_at_zoom = chunk_size / tile_size as u32;
+        let width_tiles_at_zoom = chunk_size / tile_size;
+        let height_tiles_at_zoom = chunk_size / tile_size;
 
         for tilex in 0..width_tiles_at_zoom {
             for tiley in 0..height_tiles_at_zoom {
@@ -413,5 +413,5 @@ async fn process_chunk(
             }
         }
     }
-    return tiles_processed;
+    tiles_processed
 }

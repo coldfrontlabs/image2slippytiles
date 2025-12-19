@@ -3,9 +3,9 @@ use crate::dynamicimage::load_dynamic_image;
 use crate::metadata::*;
 use crate::openslide::load_openslide_image;
 use image::DynamicImage;
+use image::ImageFormat;
 use openslide_rs::OpenSlide;
 use std::path::Path;
-use image::ImageFormat;
 
 const OPENSLIDE_FORMATS: [&str; 12] = [
     "svs", "tif", "dcm", "vms", "vmu", "ndpi", "scn", "mrxs", "tiff", "svslide", "bif", "czi",
@@ -19,8 +19,8 @@ pub enum ChunkableImageSource {
 impl ChunkSource for ChunkableImageSource {
     fn get_threads(&self) -> usize {
         match self {
-            ChunkableImageSource::DynamicImage(_) => return 1,
-            ChunkableImageSource::Slide(_) => return 4,
+            ChunkableImageSource::DynamicImage(_) => 1,
+            ChunkableImageSource::Slide(_) => 4,
         }
     }
 
@@ -55,14 +55,6 @@ pub trait ChunkSource {
     fn get_chunk(&self, chunk_id: (u32, u32), chunk_width: u32, chunk_height: u32) -> DynamicImage;
     fn get_image_metadata(&self) -> ImageMetadata;
     fn get_slide_metadata(&self) -> Option<SlideMetadata>;
-
-    fn get_full_image(&self) -> DynamicImage {
-        self.get_chunk(
-            (0, 0),
-            self.get_image_metadata().width,
-            self.get_image_metadata().height,
-        )
-    }
 }
 
 pub fn load_image(args: &Cli) -> Result<ChunkableImageSource, String> {
@@ -78,9 +70,7 @@ pub fn load_image(args: &Cli) -> Result<ChunkableImageSource, String> {
                 } else {
                     res
                 }
-            }
-            
-            else {
+            } else {
                 load_dynamic_image(args, None)
             }
         }
