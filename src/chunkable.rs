@@ -2,10 +2,11 @@ use crate::cli::Cli;
 use crate::dynamicimage::load_dynamic_image;
 use crate::metadata::*;
 use crate::openslide::load_openslide_image;
+use crate::vips::load_vips_image;
 use image::DynamicImage;
 use openslide_rs::OpenSlide;
 use std::path::Path;
-use libvips::VipsImage;
+use rs_vips::VipsImage;
 use image::ImageFormat;
 
 const OPENSLIDE_FORMATS: [&str; 12] = [
@@ -15,7 +16,7 @@ const OPENSLIDE_FORMATS: [&str; 12] = [
 pub enum ChunkableImageSource {
     DynamicImage(DynamicImage),
     Slide(Box<OpenSlide>),
-    //Vips(VipsImage),
+    Vips(VipsImage),
 }
 
 impl ChunkSource for ChunkableImageSource {
@@ -23,6 +24,7 @@ impl ChunkSource for ChunkableImageSource {
         match self {
             ChunkableImageSource::DynamicImage(_) => return 1,
             ChunkableImageSource::Slide(_) => return 4,
+            ChunkableImageSource::Vips(_) => return 1,
         }
     }
 
@@ -81,14 +83,14 @@ pub fn load_image(args: &Cli) -> Result<ChunkableImageSource, String> {
             if OPENSLIDE_FORMATS.contains(&extension.to_str().unwrap()) {
                 let res = load_openslide_image(args);
                 if res.is_err() {
-                    load_dynamic_image(args, Some(ImageFormat::Tiff))
+                    load_vips_image(args, Some(ImageFormat::Tiff))
                 } else {
                     res
                 }
             }
             
             else {
-                load_dynamic_image(args, None)
+                load_vips_image(args, None)
             }
         }
         None => Err(format!("Unknown file type in file: {}", args.filename)),

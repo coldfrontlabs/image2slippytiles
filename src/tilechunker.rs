@@ -1,6 +1,6 @@
 use crate::chunkable::*;
 use crate::cli::Cli;
-use crate::globals::PEAK_ALLOC;
+//use crate::globals::PEAK_ALLOC;
 use crate::metadata::*;
 use crate::thumbnail::*;
 use futures::future::join_all;
@@ -239,7 +239,7 @@ pub async fn tilechunker(
             image_metadata.width as f32 / u32::pow(2, max_zoom) as f32,
         ],
         image_type: args.format,
-        peak_memory: PEAK_ALLOC.peak_usage_as_mb(),
+        peak_memory: 0.0,//PEAK_ALLOC.peak_usage_as_mb(),
         duration: start_time.elapsed().as_secs_f32(),
         image_metadata: source.get_image_metadata(),
         slide_metadata: source.get_slide_metadata(),

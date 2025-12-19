@@ -1,5 +1,5 @@
 use clap::Parser;
-use image2slippytiles::{chunkable, cli, globals::PEAK_ALLOC, thumbnail, tilechunker};
+use image2slippytiles::{chunkable, cli, /*globals::PEAK_ALLOC,*/ thumbnail, tilechunker};
 use std::process::exit;
 use std::time::Instant;
 use tokio;
@@ -46,7 +46,7 @@ async fn main() {
         }
         Err(message) => {
             eprintln!("Error loading image: {}", message);
-            eprintln!("Peak memory usage was: {}", PEAK_ALLOC.peak_usage_as_mb());
+            eprintln!("Peak memory usage was: {}", 0.0/*PEAK_ALLOC.peak_usage_as_mb()*/);
             exit(1);
         }
     }

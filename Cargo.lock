@@ -688,10 +688,10 @@ dependencies = [
  "futures",
  "hex_color",
  "image",
- "libvips",
  "openslide-rs",
  "openslide-sys",
  "peak_alloc",
+ "rs-vips",
  "serde",
  "serde_json",
  "tokio",
@@ -790,16 +790,6 @@ checksum = "d7c4b02199fee7c5d21a5ae7d8cfa79a6ef5bb2fc834d6e9058e89c825efdc55"
 dependencies = [
  "cfg-if",
  "windows-link",
-]
-
-[[package]]
-name = "libvips"
-version = "1.7.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d9930af49f9da4f576a2ec52ed8d767f6389f0c8cadfcdeaccb9c7b75ca83f8a"
-dependencies = [
- "num-derive",
- "num-traits",
 ]
 
 [[package]]
@@ -1332,6 +1322,16 @@ name = "rgb"
 version = "0.8.52"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0c6a884d2998352bb4daf0183589aec883f16a6da1f4dde84d8e2e9a5409a1ce"
+
+[[package]]
+name = "rs-vips"
+version = "0.2.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c3ecb7120399f7273a9509e9e8cc46cdcded1fcb124348ccfb227ffa6e7d9141"
+dependencies = [
+ "num-derive",
+ "num-traits",
+]
 
 [[package]]
 name = "rustc-hash"
