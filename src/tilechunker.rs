@@ -2,6 +2,7 @@ use crate::chunkable::*;
 use crate::cli::Cli;
 use crate::globals::PEAK_ALLOC;
 use crate::metadata::*;
+use crate::milestones::*;
 use crate::thumbnail::*;
 use futures::future::join_all;
 use hex_color::HexColor;
@@ -32,12 +33,14 @@ impl ImageTile {
             "{}/{}/{}/{}.{}",
             path, self.tile_id.0, self.tile_id.1, self.tile_id.2, format
         );
+
         let image_format = match format {
             "png" => image::ImageFormat::Png,
             "jpg" => image::ImageFormat::Jpeg,
             "webp" => image::ImageFormat::WebP,
             _ => image::ImageFormat::Png,
         };
+
         if image_format == image::ImageFormat::Jpeg {
             let rgb = self.image.to_rgb8();
             rgb.save_with_format(name, image_format).unwrap();
@@ -123,6 +126,16 @@ pub async fn tilechunker(
                 eprintln!("Chunk ID: {:?}", chunk_id);
             }
 
+            if args.resumable && has_milestone(chunk_id, "full", args.output.as_str()) {
+                if args.debug {
+                    eprintln!(
+                        "Had milestone for Chunk ID: {:?}, skipping it's processing.",
+                        chunk_id
+                    );
+                }
+                continue;
+            }
+
             let mut chunk = source.get_chunk(chunk_id, chunk_size, chunk_size);
 
             if chunk.width() != chunk_size || chunk.height() != chunk_size {
@@ -160,6 +173,7 @@ pub async fn tilechunker(
                 args.format.clone(),
                 args.verbose,
                 args.debug,
+                args.resumable,
             )));
 
             if handles.len() > threads {
@@ -185,6 +199,15 @@ pub async fn tilechunker(
     }
 
     for z in (args.zoom..max_chunk_zoom).rev() {
+        if args.resumable && has_milestone((0, 0), &format!("{}", z), args.output.as_str()) {
+            if args.debug {
+                eprintln!(
+                    "Had milestone for lower zoom: {:?}, skipping it's processing.",
+                    z
+                );
+            }
+            continue;
+        }
         let tiles_at_zoom = u32::pow(2, z);
 
         for x in 0..tiles_at_zoom {
@@ -212,6 +235,13 @@ pub async fn tilechunker(
                     tileimage.save(&args.output, args.format.as_str());
                 }
             }
+        }
+
+        if args.resumable {
+            if args.debug {
+                eprintln!("Writing milestone for lower zoom: {:?}", z);
+            }
+            write_milestone((0, 0), &format!("{}", z), &args.output.as_str());
         }
     }
 
@@ -349,6 +379,7 @@ async fn process_chunk(
     format: String,
     _verbose: bool,
     debug: bool,
+    resumable: bool,
 ) -> u32 {
     let mut tiles_processed = 0;
     for z in max_chunk_zoom..max_zoom + 1 {
@@ -412,6 +443,12 @@ async fn process_chunk(
                 }
             }
         }
+    }
+    if resumable {
+        if debug {
+            eprintln!("Writing milestone for Chunk ID: {:?}", (x, y));
+        }
+        write_milestone((x, y), "full", &output);
     }
     tiles_processed
 }

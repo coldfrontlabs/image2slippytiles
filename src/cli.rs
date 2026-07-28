@@ -34,7 +34,7 @@ pub struct Cli {
     #[arg(short = 'j', long)]
     pub json: bool,
 
-    /// Output type (png, jpg, webp)
+    /// Output type (png, jpg, or webp)
     #[arg(short = 't', long, default_value = "png")]
     pub format: String,
 
@@ -61,4 +61,8 @@ pub struct Cli {
     /// Generate a thumbnail from an existing zoomify tileset.
     #[arg(long)]
     pub thumbnailfromzoomifytiles: bool,
+
+    /// Mark milestones so the tiling process is resumable.
+    #[arg(short = 'r', long)]
+    pub resumable: bool,
 }

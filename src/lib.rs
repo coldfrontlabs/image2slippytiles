@@ -3,6 +3,7 @@ pub mod cli;
 pub mod dynamicimage;
 pub mod globals;
 pub mod metadata;
+pub mod milestones;
 pub mod openslide;
 pub mod thumbnail;
 pub mod tilechunker;
