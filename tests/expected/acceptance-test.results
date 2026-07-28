@@ -103,6 +103,7 @@
 15be7079e5be2cd67b9cb0c4d4c6fc09  ./tests/tmp/iss073e0546366~small.jpg/2/0/1.png
 15c61a0592c34e9abfb1c693a8434fac  ./tests/tmp/iss073e0546366~orig.jpg/6/32/6.png
 15dc695c08b8ccc09429ff63636d2e15  ./tests/tmp/iss073e0546366~small.jpg.out
+15dc695c08b8ccc09429ff63636d2e15  ./tests/tmp/iss073e0546366~small.jpg.out.resumed
 160de1fda65eef6cadfcda7eeccac9ce  ./tests/tmp/CMU-1-Small-Region.svs/3/1/2.png
 1643ca4a27af7a37ca7ce909be918aeb  ./tests/tmp/iss073e0546366~orig.jpg/6/12/19.png
 16aa30a7e67010410e050196506759a4  ./tests/tmp/iss073e0546366~orig.jpg/6/30/17.png
@@ -420,6 +421,7 @@
 51772c94ac3bc94e48b0e1659e540dc6  ./tests/tmp/iss073e0546366~orig.jpg/6/32/13.png
 518e4d9444f044a2050ef96e7ecccc54  ./tests/tmp/iss073e0546366~orig.jpg/6/32/3.png
 51abd95e8321469b345cbd087a2a4ed9  ./tests/tmp/iss073e0546366~large.jpg.out
+51abd95e8321469b345cbd087a2a4ed9  ./tests/tmp/iss073e0546366~large.jpg.out.resumed
 51b0465aad5dbd5bdbd9fecee6b40d01  ./tests/tmp/iss073e0546366~orig.jpg/6/3/13.png
 5211e18de679e1d3fe49a10bc48ef3a2  ./tests/tmp/iss073e0546366~orig.jpg/6/23/3.png
 5214c090e26421a52dcd022e17545325  ./tests/tmp/iss073e0546366~orig.jpg/6/14/6.png
@@ -495,6 +497,7 @@
 5f81c7431b2aeef811b28adb822a8421  ./tests/tmp/iss073e0546366~orig.jpg/6/0/16.png
 5f91cc20ed8c39bbd42438c06d8677da  ./tests/tmp/iss073e0546366~orig.jpg/5/5/9.png
 600070854b4f64714b3283c2c8ff08bd  ./tests/tmp/1.3.6.1.4.1.36533.16442201611142227222145391901722112346167.dcm.out
+600070854b4f64714b3283c2c8ff08bd  ./tests/tmp/1.3.6.1.4.1.36533.16442201611142227222145391901722112346167.dcm.out.resumed
 604886667d72586adbdfefb685641350  ./tests/tmp/iss073e0546366~orig.jpg/6/18/3.png
 6055c5f16f741ca5da2bedb6eac9b04a  ./tests/tmp/iss073e0546366~orig.jpg/6/23/2.png
 6062e67283df4a96d2299e26c500cc30  ./tests/tmp/iss073e0546366~orig.jpg/6/32/21.png
@@ -507,6 +510,7 @@
 614c0afc37f7cbd928b993f47b4fa943  ./tests/tmp/iss073e0546366~orig.jpg/6/17/7.png
 617c2d99bc175907f7ba275c003f029d  ./tests/tmp/CMU-1-Small-Region.svs/4/6/11.png
 61bb65a64d5cf6db4e53aec49f7461ab  ./tests/tmp/iss073e0546366~medium.jpg.out
+61bb65a64d5cf6db4e53aec49f7461ab  ./tests/tmp/iss073e0546366~medium.jpg.out.resumed
 61ed25e6d93c97c57b8dd50e76565bc9  ./tests/tmp/iss073e0546366~orig.jpg/6/3/10.png
 61f63bbb8f9b905d357bad768b1c1c64  ./tests/tmp/iss073e0546366~orig.jpg/6/21/13.png
 622ecf934a851e8001638f30363c90e2  ./tests/tmp/iss073e0546366~orig.jpg/6/26/20.png
@@ -522,6 +526,7 @@
 6469f5d7a6be608698fc166a8db2a492  ./tests/tmp/iss073e0546366~orig.jpg/6/1/19.png
 647ad3c64dc738cb0cf0a4dedeb63623  ./tests/tmp/iss073e0546366~orig.jpg/6/3/9.png
 64c237b9ab2d8a9609b817d8c953d559  ./tests/tmp/CMU-1-Small-Region.svs.out
+64c237b9ab2d8a9609b817d8c953d559  ./tests/tmp/CMU-1-Small-Region.svs.out.resumed
 64dacaa87d96de1d2f86d7fbe73069f4  ./tests/tmp/iss073e0546366~orig.jpg/6/14/7.png
 64f91f1501c6df5584e9093b988083a3  ./tests/tmp/iss073e0546366~orig.jpg/6/32/14.png
 6569bce45844e64d439fed9b76bace76  ./tests/tmp/iss073e0546366~orig.jpg/6/6/5.png
@@ -1053,6 +1058,7 @@ ca3a71d950361c15f7390aaa4bb2a876  ./tests/tmp/iss073e0546366~large.jpg/3/0/3.png
 cae10aebd269be6fa052e8af80843a66  ./tests/tmp/iss073e0546366~orig.jpg/6/10/14.png
 caea6a46c3ea777fa99ae8ecd2def74a  ./tests/tmp/iss073e0546366~medium.jpg/2/0/1.png
 cb123b3b3df9957edfcbb8addb1ccbc1  ./tests/tmp/iss073e0546366~orig.jpg.out
+cb123b3b3df9957edfcbb8addb1ccbc1  ./tests/tmp/iss073e0546366~orig.jpg.out.resumed
 cb21bb7d0ca29a05e673608ebf2c312e  ./tests/tmp/iss073e0546366~orig.jpg/5/10/2.png
 cbd4a627f914756ccd71016767f19939  ./tests/tmp/iss073e0546366~orig.jpg/6/8/15.png
 cbde323ba3d4bfccad6940ae10990c62  ./tests/tmp/CMU-1-Small-Region.svs/4/0/11.png

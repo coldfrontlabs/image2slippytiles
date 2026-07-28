@@ -12,6 +12,13 @@ for source_file in $DIR/tests/source/*; do
     output_dir="$DIR/tests/tmp/$filename"
     mkdir -p $output_dir
     ./target/release/image2slippytiles --resumable --thumbnail --colour '#DDDDDDFF' --format png --zoom 0 --json --output $output_dir "$source_file" | jq 'del(.peak_memory) | del(.duration)' > "./tests/tmp/$filename.out"
+    ./target/release/image2slippytiles --resumable --thumbnail --colour '#DDDDDDFF' --format png --zoom 0 --json --output $output_dir "$source_file" | jq 'del(.peak_memory) | del(.duration)' > "./tests/tmp/$filename.out.resumed"
+
+    diff=$(diff "./tests/tmp/$filename.out" "./tests/tmp/$filename.out.resumed")
+    if [ $? == 1 ]; then
+        echo -e "Acceptance testing failed. './tests/tmp/$filename.out' and './tests/tmp/$filename.out.resumed' do not match."
+        exit 1;
+    fi
 done
 
 echo "Comparing output to expected results";
