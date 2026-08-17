@@ -1,8 +1,12 @@
 use crate::cli::Cli;
+use crate::globals::Image2SlippyError;
 use image::{DynamicImage, GenericImageView};
 use std::path::Path;
 
-pub fn thumbnailfromtiles(args: &Cli, dimension: Option<(u32, u32)>) {
+pub fn thumbnailfromtiles(
+    args: &Cli,
+    dimension: Option<(u32, u32)>,
+) -> Result<(), Image2SlippyError> {
     let min_tile_path_res = tile_path(
         &args.output,
         0,
@@ -12,8 +16,10 @@ pub fn thumbnailfromtiles(args: &Cli, dimension: Option<(u32, u32)>) {
         args.thumbnailfromzoomifytiles,
     );
     if min_tile_path_res.is_err() {
-        eprintln!("{}", min_tile_path_res.unwrap_err());
-        return;
+        return Err(Image2SlippyError::Image2SlippyError(format!(
+            "{}",
+            min_tile_path_res.unwrap_err()
+        )));
     }
     let min_tile_path = min_tile_path_res.unwrap();
     let min_tile = image::open(&min_tile_path).unwrap();
@@ -48,8 +54,7 @@ pub fn thumbnailfromtiles(args: &Cli, dimension: Option<(u32, u32)>) {
         max_available_zoom,
         &args.format,
         args.thumbnailfromzoomifytiles,
-    )
-    .unwrap();
+    )?;
 
     let canary_tile = image::open(&canary_tile_path).unwrap();
     let tile_size = canary_tile.width();
@@ -133,8 +138,8 @@ pub fn thumbnailfromtiles(args: &Cli, dimension: Option<(u32, u32)>) {
     rgb.save_with_format(
         format!("{}/thumbnail.jpg", args.output),
         image::ImageFormat::Jpeg,
-    )
-    .unwrap();
+    )?;
+    Ok(())
 }
 
 pub fn real_min_size(image: &DynamicImage) -> (u32, u32) {

@@ -9,8 +9,14 @@ async fn main() {
     let mut args = crate::cli::Cli::parse();
 
     if args.thumbnailfromtiles || args.thumbnailfromzoomifytiles {
-        thumbnail::thumbnailfromtiles(&args, None);
-        exit(0);
+        let res = thumbnail::thumbnailfromtiles(&args, None);
+        match res {
+            Ok(()) => exit(0),
+            Err(error) => {
+                eprintln!("{}", error);
+                exit(1);
+            }
+        }
     }
 
     if args.debug {
@@ -37,8 +43,8 @@ async fn main() {
                         println!("{:#?}", tiles);
                     }
                 }
-                Err(message) => {
-                    eprintln!("{}", message);
+                Err(error) => {
+                    eprintln!("{}", error);
                     exit(1);
                 }
             }

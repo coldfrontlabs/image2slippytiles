@@ -1,15 +1,16 @@
 use crate::chunkable::*;
 use crate::cli::Cli;
-use crate::globals::PEAK_ALLOC;
+use crate::globals::*;
 use crate::metadata::*;
 use crate::milestones::*;
 use crate::thumbnail::*;
-use futures::future::join_all;
+use futures::future::try_join_all;
 use hex_color::HexColor;
 use image::imageops::FilterType;
 use image::{DynamicImage, GenericImage, GenericImageView};
 use std::fs;
-use std::time::Instant;
+use std::time::{Duration, Instant};
+use tokio::time::timeout;
 
 #[derive(Debug)]
 
@@ -25,10 +26,21 @@ pub struct ImageTile {
 }
 
 impl ImageTile {
-    pub fn save(&self, path: &str, format: &str) {
-        fs::create_dir(format!("{}/{}", path, self.tile_id.0)).unwrap_or_default();
-        fs::create_dir(format!("{}/{}/{}", path, self.tile_id.0, self.tile_id.1))
-            .unwrap_or_default();
+    pub fn save(&self, path: &str, format: &str) -> Result<(), Image2SlippyError> {
+        let res = fs::create_dir_all(format!("{}/{}/{}", path, self.tile_id.0, self.tile_id.1));
+        match res {
+            Ok(_) => (),
+            Err(err) => {
+                return Err(Image2SlippyError::IOError(
+                    err,
+                    format!(
+                        "Error creating the tiles directory: {}/{}/{}",
+                        path, self.tile_id.0, self.tile_id.1
+                    ),
+                ));
+            }
+        }
+
         let name: String = format!(
             "{}/{}/{}/{}.{}",
             path, self.tile_id.0, self.tile_id.1, self.tile_id.2, format
@@ -43,10 +55,11 @@ impl ImageTile {
 
         if image_format == image::ImageFormat::Jpeg {
             let rgb = self.image.to_rgb8();
-            rgb.save_with_format(name, image_format).unwrap();
+            rgb.save_with_format(name, image_format)?;
         } else {
-            self.image.save_with_format(name, image_format).unwrap();
+            self.image.save_with_format(name, image_format)?;
         }
+        Ok(())
     }
 }
 
@@ -56,7 +69,7 @@ pub async fn tilechunker(
     chunk_zoom: u32,
     source: impl ChunkSource,
     start_time: Instant,
-) -> Result<TileMetadata, String> {
+) -> Result<TileMetadata, Image2SlippyError> {
     if args.debug {
         eprintln!("Generating tiles from image ...")
     }
@@ -116,7 +129,17 @@ pub async fn tilechunker(
         )
     }
 
-    fs::create_dir(&args.output).unwrap_or_default();
+    let res = fs::create_dir_all(&args.output);
+    match res {
+        Ok(_) => (),
+        Err(err) => {
+            return Err(Image2SlippyError::IOError(
+                err,
+                format!("Error creating the output directory: {}", &args.output),
+            ));
+        }
+    }
+
     let mut handles = Vec::new();
     for x in 0..width_chunks {
         for y in 0..height_chunks {
@@ -126,7 +149,7 @@ pub async fn tilechunker(
                 eprintln!("Chunk ID: {:?}", chunk_id);
             }
 
-            if args.resumable && has_milestone(chunk_id, "full", args.output.as_str()) {
+            if args.resumable && has_milestone(chunk_id, "full", args.output.as_str())? {
                 if args.debug {
                     eprintln!(
                         "Had milestone for Chunk ID: {:?}, skipping it's processing.",
@@ -159,7 +182,7 @@ pub async fn tilechunker(
             }
 
             // process chunk.
-            handles.push(tokio::spawn(process_chunk(
+            handles.push(process_chunk(
                 chunk,
                 x,
                 y,
@@ -174,21 +197,41 @@ pub async fn tilechunker(
                 args.verbose,
                 args.debug,
                 args.resumable,
-            )));
+            ));
 
             if handles.len() > threads {
-                join_all(handles.iter_mut()).await;
+                let time_left = args.timeout - start_time.elapsed().as_secs();
+                match timeout(Duration::from_secs(time_left), try_join_all(handles)).await {
+                    Ok(results) => match results {
+                        Ok(_) => (),
+                        Err(err) => return Err(err),
+                    },
+                    Err(_) => {
+                        return Err(Image2SlippyError::Image2SlippyError(
+                            "The join_all operation timed out!".to_string(),
+                        ));
+                    }
+                }
                 handles = Vec::new();
             }
             // Process chunk end.
-            timeout(args.timeout, start_time)?;
             if args.debug {
                 eprintln!("Done tile generation for chunk.")
             }
         }
     }
-    join_all(handles).await;
-
+    let time_left = args.timeout - start_time.elapsed().as_secs();
+    match timeout(Duration::from_secs(time_left), try_join_all(handles)).await {
+        Ok(results) => match results {
+            Ok(_) => (),
+            Err(err) => return Err(err),
+        },
+        Err(_) => {
+            return Err(Image2SlippyError::Image2SlippyError(
+                "The join_all operation timed out!".to_string(),
+            ));
+        }
+    }
     if args.verbose {
         eprintln!("Done processing all chunks.");
         eprintln!(
@@ -199,7 +242,7 @@ pub async fn tilechunker(
     }
 
     for z in (args.zoom..max_chunk_zoom).rev() {
-        if args.resumable && has_milestone((0, 0), &format!("{}", z), args.output.as_str()) {
+        if args.resumable && has_milestone((0, 0), &format!("{}", z), args.output.as_str())? {
             if args.debug {
                 eprintln!(
                     "Had milestone for lower zoom: {:?}, skipping it's processing.",
@@ -223,8 +266,6 @@ pub async fn tilechunker(
                     eprintln!("Compiling tile {:?}", tile_id);
                 }
 
-                timeout(args.timeout, start_time)?;
-
                 if let Some(tileimage) = generate_compiled_tile(
                     tile,
                     final_tile_size,
@@ -232,7 +273,7 @@ pub async fn tilechunker(
                     &args.format,
                     &default_colour,
                 ) {
-                    tileimage.save(&args.output, args.format.as_str());
+                    tileimage.save(&args.output, args.format.as_str())?;
                 }
             }
         }
@@ -241,7 +282,7 @@ pub async fn tilechunker(
             if args.debug {
                 eprintln!("Writing milestone for lower zoom: {:?}", z);
             }
-            write_milestone((0, 0), &format!("{}", z), &args.output.as_str());
+            write_milestone((0, 0), &format!("{}", z), &args.output.as_str())?;
         }
     }
 
@@ -256,7 +297,7 @@ pub async fn tilechunker(
         if args.verbose {
             eprintln!("Generating thumbnail from tiles.")
         }
-        thumbnailfromtiles(&args, Some((image_metadata.width, image_metadata.height)));
+        thumbnailfromtiles(&args, Some((image_metadata.width, image_metadata.height)))?;
     }
 
     Ok(TileMetadata {
@@ -349,22 +390,23 @@ pub fn generate_compiled_tile(
     })
 }
 
-pub fn timeout(timeout: u64, start_time: Instant) -> Result<(), String> {
+/*
+pub fn timeout(timeout: u64, start_time: Instant) -> Result<(), Image2SlippyError> {
     if timeout == 0 {
         return Ok(());
     }
 
     if start_time.elapsed().as_secs() > timeout {
-        return Err(format!(
+        return Err(Image2SlippyError::Image2SlippyError(format!(
             "Timeout exceeded: Took {}, allowed: {}",
             start_time.elapsed().as_secs_f32(),
             timeout
         )
-        .to_string());
+        .to_string()));
     }
     Ok(())
 }
-
+*/
 async fn process_chunk(
     chunk: DynamicImage,
     x: u32,
@@ -380,7 +422,7 @@ async fn process_chunk(
     _verbose: bool,
     debug: bool,
     resumable: bool,
-) -> u32 {
+) -> Result<u32, Image2SlippyError> {
     let mut tiles_processed = 0;
     for z in max_chunk_zoom..max_zoom + 1 {
         let tile_size = u32::pow(2, max_zoom - z) * final_tile_size;
@@ -438,7 +480,7 @@ async fn process_chunk(
                     if debug {
                         eprintln!("Full tile");
                     }
-                    generate_full_tile(&chunk, tile, final_tile_size).save(&output, &format);
+                    generate_full_tile(&chunk, tile, final_tile_size).save(&output, &format)?;
                     tiles_processed += 1;
                 }
             }
@@ -448,7 +490,7 @@ async fn process_chunk(
         if debug {
             eprintln!("Writing milestone for Chunk ID: {:?}", (x, y));
         }
-        write_milestone((x, y), "full", &output);
+        write_milestone((x, y), "full", &output)?;
     }
-    tiles_processed
+    Ok(tiles_processed)
 }
