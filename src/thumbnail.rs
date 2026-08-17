@@ -15,11 +15,8 @@ pub fn thumbnailfromtiles(
         &args.format,
         args.thumbnailfromzoomifytiles,
     );
-    if min_tile_path_res.is_err() {
-        return Err(Image2SlippyError::Image2SlippyError(format!(
-            "{}",
-            min_tile_path_res.unwrap_err()
-        )));
+    if let Err(error) = min_tile_path_res {
+        return Err(Image2SlippyError::Image2SlippyError(error));
     }
     let min_tile_path = min_tile_path_res.unwrap();
     let min_tile = image::open(&min_tile_path).unwrap();

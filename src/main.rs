@@ -44,7 +44,8 @@ async fn main() {
                     }
                 }
                 Err(error) => {
-                    eprintln!("{}", error);
+                    eprintln!("Error: {}", error);
+                    eprintln!("Peak memory usage was: {}", PEAK_ALLOC.peak_usage_as_mb());
                     exit(1);
                 }
             }

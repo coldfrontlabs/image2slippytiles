@@ -201,6 +201,12 @@ pub async fn tilechunker(
 
             if handles.len() > threads {
                 let time_left = args.timeout - start_time.elapsed().as_secs();
+                if start_time.elapsed().as_secs() > args.timeout {
+                    return Err(Image2SlippyError::Image2SlippyError(
+                        "The process has exceeded the timeout.".to_string(),
+                    ));
+                }
+
                 match timeout(Duration::from_secs(time_left), try_join_all(handles)).await {
                     Ok(results) => match results {
                         Ok(_) => (),
@@ -208,7 +214,7 @@ pub async fn tilechunker(
                     },
                     Err(_) => {
                         return Err(Image2SlippyError::Image2SlippyError(
-                            "The join_all operation timed out!".to_string(),
+                            "The process has exceeded the timeout.".to_string(),
                         ));
                     }
                 }
@@ -221,6 +227,11 @@ pub async fn tilechunker(
         }
     }
     let time_left = args.timeout - start_time.elapsed().as_secs();
+    if start_time.elapsed().as_secs() > args.timeout {
+        return Err(Image2SlippyError::Image2SlippyError(
+            "The process has exceeded the timeout.".to_string(),
+        ));
+    }
     match timeout(Duration::from_secs(time_left), try_join_all(handles)).await {
         Ok(results) => match results {
             Ok(_) => (),
@@ -228,7 +239,7 @@ pub async fn tilechunker(
         },
         Err(_) => {
             return Err(Image2SlippyError::Image2SlippyError(
-                "The join_all operation timed out!".to_string(),
+                "The process has exceeded the timeout.".to_string(),
             ));
         }
     }
@@ -282,7 +293,7 @@ pub async fn tilechunker(
             if args.debug {
                 eprintln!("Writing milestone for lower zoom: {:?}", z);
             }
-            write_milestone((0, 0), &format!("{}", z), &args.output.as_str())?;
+            write_milestone((0, 0), &format!("{}", z), args.output.as_str())?;
         }
     }
 
